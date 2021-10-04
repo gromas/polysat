@@ -10,5 +10,5 @@ It is a polynomial 3-SAT solver that uses O (n ^ 3) bytes of disk space to compu
 
 Welcome to the new POLYNOMIAL World!
 
-I am currently writing an article about the solution and am going to upload the sources as soon as possible.
+I'm currently writing an article about the solution and I'm going to upload the sources as soon as possible.
 
