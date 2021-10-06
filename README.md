@@ -10,5 +10,10 @@ It is a polynomial 3-SAT solver that uses O(n³) bytes of disk space to compute 
 
 Welcome to the new POLYNOMIAL World!
 
-I'm currently writing an article about the solution and I'm going to upload the sources as soon as possible.
+YouTube video (Russian language only)
+https://youtu.be/hp9nAqIaRx4
+
+PowerPoint presentation (Russian language only)
+/polysat.pptx
+
 
