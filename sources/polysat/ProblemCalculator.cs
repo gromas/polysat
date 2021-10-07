@@ -101,18 +101,11 @@ namespace PolySat
                             // no states compatible with current mask -> no solutions
                             return false;
                         case 1:
-                            // single state found -> update mask
-                            for (int i = 0; i < 3; i++)
-                            {
-                                if (mask[c[i]] == NotSet)
-                                {
-                                    changed = true;
-                                    mask[c[i]] = states[0][c[i]];
-                                }
-                            }
+                            // single state found -> update mask and mark iteration has_changes
+                            changed |= ApplyState(mask, c, states[0]);
                             break;
                         case 2:
-                            // найдено два состояния, если они совпадают по неустановленному биту маски, обновляем маску
+                            // two states found -> if both contains equals variable values then update mask
                             for (int i = 0; i < 3; i++)
                             {
                                 if (mask[c[i]] == NotSet && states[0][c[i]] == states[1][c[i]])
@@ -130,6 +123,22 @@ namespace PolySat
             } while (changed);
             // conflicts no longer exist -> returns true
             return true;
+        }
+
+        // Apply single state to mask
+        private bool ApplyState(CombinationMask mask, Combination c, CombinationState s)
+        {
+            bool changed = false;
+            // single state found -> update mask
+            for (int i = 0; i < 3; i++)
+            {
+                if (mask[c[i]] == NotSet)
+                {
+                    changed = true;
+                    mask[c[i]] = s[c[i]];
+                }
+            }
+            return changed;
         }
     }
 }
