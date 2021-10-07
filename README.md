@@ -14,6 +14,6 @@ YouTube video (Russian language only)
 https://youtu.be/hp9nAqIaRx4
 
 PowerPoint presentation (Russian language only)
-/polysat.pptx
+https://github.com/gromas/polysat/polysat.pptx
 
 
