@@ -16,4 +16,6 @@ https://youtu.be/hp9nAqIaRx4
 PowerPoint presentation (Russian language only)
 /polysat.pptx
 
+Telegramm channel for discussions
+https://t.me/polysat
 
