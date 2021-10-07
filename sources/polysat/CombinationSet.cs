@@ -30,6 +30,19 @@ namespace PolySat
         }
 
         /// <summary>
+        /// Adds combination states 2 variable constraint (2-CNF clause)
+        /// </summary>
+        public void AddConstraint(int x0, int x1)
+        {
+            for (int x2 = 1; x2 <= stateStore.VariablesCount; x2++)
+            {
+                if (Math.Abs(x2) == Math.Abs(x0) || Math.Abs(x2) == Math.Abs(x1)) continue;
+                AddConstraint(x0, x1, x2);
+                AddConstraint(x0, x1, -x2);
+            }
+        }
+
+        /// <summary>
         /// Returns combination state
         /// </summary>
         /// <param name="x">combination</param>
