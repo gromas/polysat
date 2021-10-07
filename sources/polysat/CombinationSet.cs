@@ -36,7 +36,7 @@ namespace PolySat
         {
             for (int x2 = 1; x2 <= stateStore.VariablesCount; x2++)
             {
-                if (Math.Abs(x2) == Math.Abs(x0) || Math.Abs(x2) == Math.Abs(x1)) continue;
+                if (x2 == Math.Abs(x0) || x2 == Math.Abs(x1)) continue;
                 AddConstraint(x0, x1, x2);
                 AddConstraint(x0, x1, -x2);
             }
