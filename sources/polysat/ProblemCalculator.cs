@@ -8,10 +8,10 @@ namespace PolySat
     {
         const byte NotSet = 2;
 
-        private readonly CombinationSet combinations;
-        public ProblemCalculator(CombinationSet combinations)
+        private readonly StateStore store;
+        public ProblemCalculator(StateStore store)
         {
-            this.combinations = combinations;
+            this.store = store;
         }
 
         public bool IsSatisfable()
@@ -34,22 +34,20 @@ namespace PolySat
                 // Theory maximum: O(8(n^3-3n^2+2n))
                 // Practical: O(8(n^3-3n^2+2n))
                 // Each iteration 
-                foreach (Combination c in combinations.All)
+                foreach (Combination c in store.GetAllCombinations())
                 {
                     satisfable = false;
                     // up to 8 posible combination states
-                    var states = combinations.PosibleStates(c).ToArray();
+                    var states = store.GetStates(c);
                     // for each combination state we must check than exists consistent solution (no conflicts between mask and states)
                     foreach (CombinationState s in states)
                     {
                         satisfable = true;
                         // create combination state mask size of n
-                        CombinationMask mask = new CombinationMask(combinations.VariablesCount);
+                        CombinationMask mask = new CombinationMask(store.VariablesCount);
 
                         // set values for known variabless
-                        mask[c[0]] = s[c[0]];
-                        mask[c[1]] = s[c[1]];
-                        mask[c[2]] = s[c[2]];
+                        mask.ApplyState(s);
 
                         // test combination state for consistency with all other combinations
                         if (!DepthSearch(mask))
@@ -57,9 +55,9 @@ namespace PolySat
                             changed = true;
                             // if for current combination state not exists consisten statemask
                             // with other combinations then current combination state is a constraint
-                            combinations.Remove(s);
+                            store.RemoveState(s);
                             // if no more states in any combination then no solutions exists
-                            if (combinations.PosibleStates(c).Count() == 0) return false;
+                            if (store.GetStates(c).Count() == 0) return false;
                         }
                     }
                 }
@@ -86,7 +84,7 @@ namespace PolySat
                 {
                     // выбираем состояния сочетания, соответствующие маске
                     CombinationState[] states =
-                        combinations.PosibleStates(c)
+                        store.GetStates(c)
                         .Where(s =>
                         (mask[c[0]] == NotSet || mask[c[0]] == s[c[0]]) &&
                         (mask[c[1]] == NotSet || mask[c[1]] == s[c[1]]) &&
@@ -99,7 +97,7 @@ namespace PolySat
                             return false;
                         case 1:
                             // single state found -> update mask and mark iteration has_changes
-                            changed |= ApplyState(mask, c, states[0]);
+                            changed |= mask.ApplyState(states[0]);
                             break;
                         case 2:
                             // two states found -> if both contains equals variable values then update mask
@@ -120,22 +118,6 @@ namespace PolySat
             } while (changed);
             // conflicts no longer exist -> returns true
             return true;
-        }
-
-        // Apply single state to mask
-        private bool ApplyState(CombinationMask mask, Combination c, CombinationState s)
-        {
-            bool changed = false;
-            // single state found -> update mask
-            for (int i = 0; i < 3; i++)
-            {
-                if (mask[c[i]] == NotSet)
-                {
-                    changed = true;
-                    mask[c[i]] = s[c[i]];
-                }
-            }
-            return changed;
         }
     }
 }

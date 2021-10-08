@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace PolySat
 {
@@ -23,6 +24,15 @@ namespace PolySat
         {
             this.n = n;
             mask = new byte[n];
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            for (int i = 0; i < n; i++)
+            {
+                mask[i] = NotSet;
+            }
         }
 
         /// <summary>
@@ -50,11 +60,11 @@ namespace PolySat
         private (int[], int) SplitMask()
         {
             int[] r = new int[n];
-            int cs = n-1, cu = 0;
+            int cs = n - 1, cu = 0;
 
-            for(int i = 0; i < n; i++)
+            for (int i = 0; i < n; i++)
             {
-                if (mask[i] == 0)
+                if (mask[i] == NotSet)
                 {
                     r[cu] = i;
                     cu++;
@@ -68,24 +78,39 @@ namespace PolySat
             return (r, cu);
         }
 
-        public void ApplyState(CombinationState state)
+        // Apply single state to mask
+        public bool ApplyState(CombinationState s)
         {
-            var c = state.Combination;
-            this[c[0]] = state[c[0]];
-            this[c[1]] = state[c[1]];
-            this[c[2]] = state[c[2]];
+            bool changed = false;
+            var c = s.Combination;
+            for (int i = 0; i < 3; i++)
+            {
+                if (this[c[i]] == NotSet)
+                {
+                    changed = true;
+                    this[c[i]] = s[c[i]];
+                }
+            }
+            return changed;
         }
 
         public byte this[int index]
         {
             get
             {
-                return (byte)(mask[index - 1] ^ NotSet);
+                return mask[index - 1];
             }
             set
             {
-                mask[index - 1] = (byte)(value ^ NotSet);
+                mask[index - 1] = value;
             }
+        }
+
+        public override string ToString()
+        {
+            StringBuilder b = new StringBuilder(mask.Length);
+            for (int i = 0; i < mask.Length; i++) b.Append(mask[i] == 2 ? "x" : mask[i] == 1 ? "1" : "0");
+            return b.ToString();
         }
     }
 }

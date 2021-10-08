@@ -22,17 +22,9 @@ namespace PolySat
             }
         }
 
-        public IEnumerable<CombinationState> GetStates(CombinationSet set)
+        public override string ToString()
         {
-            var state = set[this];
-            for (int i = 0; i < 8; i++)
-            {
-                if ((state & 1) == 1)
-                {
-                    yield return new CombinationState(this, i);
-                }
-                state >>= 1;
-            }
+            return $"{{{x[0]},{x[1]},{x[2]}}}";
         }
     }
 }

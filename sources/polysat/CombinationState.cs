@@ -12,34 +12,20 @@ namespace PolySat
         /// </summary>
         private static readonly byte[][] states = new byte[8][]
         {
-            new byte[] {0,0,0 },
-            new byte[] {0,0,1 },
-            new byte[] {0,1,0 },
-            new byte[] {0,1,1 },
-            new byte[] {1,0,0 },
-            new byte[] {1,0,1 },
-            new byte[] {1,1,0 },
-            new byte[] {1,1,1 },
-        };
-
-        /// <summary>
-        /// All posible states for combination 3 of n
-        /// </summary>
-        private static readonly int[][] logStates = new int[8][]
-        {
-            new int[] {1,1,1 },
-            new int[] {1,1,-1 },
-            new int[] {1,-1,1 },
-            new int[] {1,-1,-1 },
-            new int[] {-1,1,1 },
-            new int[] {-1,1,-1 },
-            new int[] {-1,-1,1 },
-            new int[] {-1,-1,-1 },
+            new byte[] {0,0,0},
+            new byte[] {0,0,1},
+            new byte[] {0,1,0},
+            new byte[] {0,1,1},
+            new byte[] {1,0,0},
+            new byte[] {1,0,1},
+            new byte[] {1,1,0},
+            new byte[] {1,1,1},
         };
 
         private int state;
         private readonly byte[] mask;
         private readonly Combination c;
+
         public CombinationState(Combination c, int state)
         {
             this.state = state;
@@ -67,6 +53,9 @@ namespace PolySat
         public Combination Combination => c;
         public int State => state;
 
-        public int[][] LogStates => logStates;
+        public override string ToString()
+        {
+            return $"{(mask[0] == 0 ? c[0] :-c[0])} {(mask[1] == 0 ? c[1] : -c[1])} {(mask[2] == 0 ? c[2] : -c[2])} 0";
+        }
     }
 }

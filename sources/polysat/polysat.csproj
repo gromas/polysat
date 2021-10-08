@@ -7,6 +7,10 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;LOGGING_ON</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="ProblemCalculator2.cs" />
   </ItemGroup>

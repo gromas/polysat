@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
 namespace PolySat
 {
@@ -7,13 +9,29 @@ namespace PolySat
     /// </summary>
     public class StateStore
     {
+        private readonly StreamWriter writer = StreamWriter.Null;
         private readonly int n;
-        private readonly byte[] state;
+        private readonly byte[] states;
         public StateStore(int n)
         {
             Debug.Assert(n >= 3, "Minimal 3-SAT problem contains least 3 variables");
             this.n = n;
-            state = new byte[n * (n - 1) * (n - 2) / 6];
+            states = new byte[n * (n - 1) * (n - 2) / 6];
+            Initialize();
+        }
+
+        public StateStore(int n, StreamWriter writer) : this(n)
+        {
+            this.writer = writer;
+        }
+
+        private void Initialize()
+        {
+            // изначально все состояния существуют
+            for (int index = 0; index < states.Length; index++)
+            {
+                states[index] = 0xFF;
+            }
         }
 
         private int GetIndex(int a, int b, int c)
@@ -27,19 +45,33 @@ namespace PolySat
             return s0 + s1 + s2;
         }
 
-        public byte this[int a, int b, int c]
+        public IEnumerable<CombinationState> GetStates(Combination c)
         {
-            get
+            int index = GetIndex(c[0], c[1], c[2]);
+            byte state = states[index];
+            for (int i = 0; i < 8; i++)
             {
-                return (byte)(state[GetIndex(a, b, c)] ^ 0xFF);
-            }
-            set
-            {
-                state[GetIndex(a, b, c)] = (byte)(value ^ 0xFF);
+                if ((state & 1) > 0)
+                    yield return new CombinationState(c, i);
+                state >>= 1;
             }
         }
 
+        /// <summary>
+        /// Removes state from stateStore
+        /// </summary>
+        public void RemoveState(CombinationState state)
+        {
+            Combination c = state.Combination;
+            int index = GetIndex(c[0], c[1], c[2]);
+            byte stateBit = (byte)(1 << state.State);
+            states[index] &= (byte)(stateBit ^ 0xFF);
+
+
+            writer.WriteLine(state);
+        }
+
         public int VariablesCount => n;
-        public int CombinationsCount => state.Length;
+        public int CombinationsCount => states.Length;
     }
 }
