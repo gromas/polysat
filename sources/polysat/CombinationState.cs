@@ -22,11 +22,28 @@ namespace PolySat
             new byte[] {1,1,1 },
         };
 
-        private readonly byte[] state;
+        /// <summary>
+        /// All posible states for combination 3 of n
+        /// </summary>
+        private static readonly int[][] logStates = new int[8][]
+        {
+            new int[] {1,1,1 },
+            new int[] {1,1,-1 },
+            new int[] {1,-1,1 },
+            new int[] {1,-1,-1 },
+            new int[] {-1,1,1 },
+            new int[] {-1,1,-1 },
+            new int[] {-1,-1,1 },
+            new int[] {-1,-1,-1 },
+        };
+
+        private int state;
+        private readonly byte[] mask;
         private readonly Combination c;
         public CombinationState(Combination c, int state)
         {
-            this.state = states[state];
+            this.state = state;
+            mask = states[state];
             this.c = c;
         }
 
@@ -39,12 +56,17 @@ namespace PolySat
         {
             get
             {
-                if (varnum == c[0]) return state[0];
-                if (varnum == c[1]) return state[1];
-                if (varnum == c[2]) return state[2];
+                if (varnum == c[0]) return mask[0];
+                if (varnum == c[1]) return mask[1];
+                if (varnum == c[2]) return mask[2];
 
                 throw new IndexOutOfRangeException();
             }
         }
+
+        public Combination Combination => c;
+        public int State => state;
+
+        public int[][] LogStates => logStates;
     }
 }

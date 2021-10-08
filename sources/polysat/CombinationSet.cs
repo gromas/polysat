@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace PolySat
@@ -14,9 +15,11 @@ namespace PolySat
     {
         // combination states inmemory store
         private readonly StateStore stateStore;
+        private readonly StreamWriter writer;
 
-        public CombinationSet(StateStore stateStore)
+        public CombinationSet(StateStore stateStore, StreamWriter writer)
         {
+            this.writer = writer;
             this.stateStore = stateStore;
         }
 
@@ -25,8 +28,15 @@ namespace PolySat
         /// </summary>
         public void AddConstraint(int a, int b, int c)
         {
-            var x = new int[] { a, b, c }.OrderBy(x => Math.Abs(x)).ToArray();
-            stateStore[Math.Abs(x[0]), Math.Abs(x[1]), Math.Abs(x[2])] &= (byte)((1 << ((x[2] > 0 ? 1 : 0) + (x[1] > 0 ? 2 : 0) + (x[0] > 0 ? 4 : 0))) ^ 0xFF);
+            var x = Utils.SortByAbs(a, b, c);
+
+            byte s = (byte)(1 << ((x[2][1] > 0 ? 1 : 0) + (x[1][1] > 0 ? 2 : 0) + (x[0][1] > 0 ? 4 : 0)));
+
+            if ((stateStore[x[0][0], x[1][0], x[2][0]] & s) > 0)
+            {
+                stateStore[x[0][0], x[1][0], x[2][0]] &= (byte)(s ^ 0xFF);
+                writer.WriteLine($"{x[0][1]} {x[1][1]} {x[2][1]} 0");
+            }
         }
 
         /// <summary>
@@ -34,11 +44,48 @@ namespace PolySat
         /// </summary>
         public void AddConstraint(int x0, int x1)
         {
+            var x = new int[] { Math.Abs(x0), Math.Abs(x1) };
+
             for (int x2 = 1; x2 <= stateStore.VariablesCount; x2++)
             {
-                if (x2 == Math.Abs(x0) || x2 == Math.Abs(x1)) continue;
+                if (x2 == x[0] || x2 == x[1]) continue;
                 AddConstraint(x0, x1, x2);
                 AddConstraint(x0, x1, -x2);
+            }
+        }
+
+        /// <summary>
+        /// Removes combination state from stateStore
+        /// </summary>
+        public void Remove(CombinationState state)
+        {
+            Combination c = state.Combination;
+            byte stateBit = (byte)(1 << state.State);
+            stateStore[c[0], c[1], c[2]] &= (byte)(stateBit ^ 0xFF);
+
+            var s = $"{state.LogStates[state.State][0] * c[0]} {state.LogStates[state.State][1] * c[1]} {state.LogStates[state.State][2] * c[2]} 0";
+
+            writer.WriteLine(s);
+        }
+
+        /// <summary>
+        /// Massive constraints loading
+        /// </summary>
+        /// <param name=""></param>
+        public void AddConstraints(IEnumerable<int[]> literalset)
+        {
+            foreach (var ls in literalset)
+            {
+                if (ls.Length == 3)
+                {
+                    AddConstraint(ls[0], ls[1], ls[2]);
+                }
+                else if (ls.Length == 2)
+                {
+                    AddConstraint(ls[0], ls[1]);
+                }
+                else
+                    throw new Exception("literal count must be 2 or 3");
             }
         }
 

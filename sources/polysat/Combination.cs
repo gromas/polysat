@@ -11,7 +11,7 @@ namespace PolySat
         private readonly int[] x;
         public Combination(int x0, int x1, int x2)
         {
-            x = new int[] { x0, x1, x2 }.OrderBy(x => x).ToArray();
+            x = Utils.Sort(x0, x1, x2);
         }
 
         public int this[int index]
@@ -19,6 +19,19 @@ namespace PolySat
             get
             {
                 return x[index];
+            }
+        }
+
+        public IEnumerable<CombinationState> GetStates(CombinationSet set)
+        {
+            var state = set[this];
+            for (int i = 0; i < 8; i++)
+            {
+                if ((state & 1) == 1)
+                {
+                    yield return new CombinationState(this, i);
+                }
+                state >>= 1;
             }
         }
     }

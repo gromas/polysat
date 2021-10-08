@@ -7,4 +7,8 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="ProblemCalculator2.cs" />
+  </ItemGroup>
+
 </Project>

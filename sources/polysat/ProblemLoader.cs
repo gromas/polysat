@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -10,7 +12,13 @@ namespace PolySat
     /// </summary>
     public class ProblemLoader
     {
-        public static CombinationSet Load(string path)
+        public struct Problem
+        {
+            public int VariableCount;
+            public IEnumerable<int[]> Constraints;
+        }
+
+        public static IEnumerable<Problem> Load(string path)
         {
             using (var s = File.OpenRead(path))
             {
@@ -29,19 +37,16 @@ namespace PolySat
                         {
                             var variableCount = int.Parse(mrp.Groups[1].Value);
 
-                            var stateStore = new StateStore(variableCount);
-                            var cobinations = new CombinationSet(stateStore);
-
-                            ParseSet(r, cobinations);
-                            return cobinations;
+                            yield return new Problem { VariableCount = variableCount, Constraints = ParseSet(r) };
+                            yield break;
                         }
                     }
                 }
             }
-            throw new Exception("can't load problem");
+            //throw new Exception("can't load problem");
         }
 
-        private static void ParseSet(StreamReader r, CombinationSet combinations)
+        private static IEnumerable<int[]> ParseSet(StreamReader r)
         {
             if (!r.EndOfStream)
             {
@@ -51,15 +56,12 @@ namespace PolySat
                     {
                         var literals = line.Trim().Split(" ").Select(value => int.Parse(value)).ToArray();
 
-                        if (literals.Length == 3)
+                        if (literals.Length != 2 && literals.Length != 3)
                         {
-                            combinations.AddConstraint(literals[0], literals[1], literals[2]);
+                            throw new Exception("literals count");
                         }
-                        else if (literals.Length == 2)
-                        {
-                            combinations.AddConstraint(literals[0], literals[1]);
-                        }
-                        else throw new Exception("literals count");
+
+                        yield return literals;
                     }
                 }
             }

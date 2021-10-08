@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PolySat
@@ -31,24 +32,48 @@ namespace PolySat
         {
             get
             {
-                var temp = mask.ToArray();
+                var (temp, p) = SplitMask();
 
-                for (int x0 = 0; x0 < n; x0++)
+                for (int x0 = 0; x0 < p; x0++)
                 {
-                    if (temp[x0] == 0) continue;
-
-                    for (int x1 = 0; x1 < n; x1++)
+                    for (int x1 = p; x1 < n; x1++)
                     {
-                        if (x0 == x1) continue;
-
-                        for (int x2 = 0; x2 < n; x2++)
+                        for (int x2 = x0 + 1; x2 < x1; x2++)
                         {
-                            if (temp[x2] != 0 || x2 == x0 || x2 == x1) continue;
-                            yield return new Combination(x0 + 1, x1 + 1, x2 + 1);
+                            yield return new Combination(temp[x0] + 1, temp[x1] + 1, temp[x2] + 1);
                         }
                     }
                 }
             }
+        }
+
+        private (int[], int) SplitMask()
+        {
+            int[] r = new int[n];
+            int cs = n-1, cu = 0;
+
+            for(int i = 0; i < n; i++)
+            {
+                if (mask[i] == 0)
+                {
+                    r[cu] = i;
+                    cu++;
+                }
+                else
+                {
+                    r[cs] = i;
+                    cs--;
+                }
+            }
+            return (r, cu);
+        }
+
+        public void ApplyState(CombinationState state)
+        {
+            var c = state.Combination;
+            this[c[0]] = state[c[0]];
+            this[c[1]] = state[c[1]];
+            this[c[2]] = state[c[2]];
         }
 
         public byte this[int index]

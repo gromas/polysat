@@ -57,10 +57,7 @@ namespace PolySat
                             changed = true;
                             // if for current combination state not exists consisten statemask
                             // with other combinations then current combination state is a constraint
-                            combinations.AddConstraint(
-                                s[c[0]] == 1 ? c[0] : -c[0],
-                                s[c[1]] == 1 ? c[1] : -c[1],
-                                s[c[2]] == 1 ? c[2] : -c[2]);
+                            combinations.Remove(s);
                             // if no more states in any combination then no solutions exists
                             if (combinations.PosibleStates(c).Count() == 0) return false;
                         }
@@ -83,7 +80,7 @@ namespace PolySat
             {
                 changed = false;
                 // sequence of all unresolved combinations
-                var unsolved = mask.UnresolvedCombinations;
+                var unsolved = mask.UnresolvedCombinations.ToArray();
                 // find masked conflicts : MAX O((n-3)^3)
                 foreach (Combination c in unsolved)
                 {
