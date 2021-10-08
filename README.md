@@ -1,5 +1,5 @@
 # polysat
-Polynomial ALL-3-SAT solver
+Polynomial 3-SAT solver
 
 
 No more questions about P=NP.
