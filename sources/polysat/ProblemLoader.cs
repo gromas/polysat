@@ -51,7 +51,15 @@ namespace PolySat
                     {
                         var literals = line.Trim().Split(" ").Select(value => int.Parse(value)).ToArray();
 
-                        combinations.AddConstraint(literals[0], literals[1], literals[2]);
+                        if (literals.Length == 3)
+                        {
+                            combinations.AddConstraint(literals[0], literals[1], literals[2]);
+                        }
+                        else if (literals.Length == 2)
+                        {
+                            combinations.AddConstraint(literals[0], literals[1]);
+                        }
+                        else throw new Exception("literals count");
                     }
                 }
             }
