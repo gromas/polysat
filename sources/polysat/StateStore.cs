@@ -51,24 +51,24 @@ namespace PolySat
             byte state = states[index];
             for (int i = 0; i < 8; i++)
             {
-                if ((state & 1) > 0)
+                if (((state >> i) & 1) != 0)
                     yield return new CombinationState(c, i);
-                state >>= 1;
             }
         }
 
         /// <summary>
         /// Removes state from stateStore
         /// </summary>
-        public void RemoveState(CombinationState state)
+        public byte RemoveState(CombinationState state)
         {
             Combination c = state.Combination;
             int index = GetIndex(c[0], c[1], c[2]);
             byte stateBit = (byte)(1 << state.State);
             states[index] &= (byte)(stateBit ^ 0xFF);
 
-
             writer.WriteLine(state);
+
+            return states[index];
         }
 
         public int VariablesCount => n;

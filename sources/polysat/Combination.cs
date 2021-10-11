@@ -1,12 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace PolySat
+﻿namespace PolySat
 {
     /// <summary>
     /// Combination: represents an combination 3 of n
     /// </summary>
-    public class Combination
+    public struct Combination
     {
         private readonly int[] x;
         public Combination(int x0, int x1, int x2)

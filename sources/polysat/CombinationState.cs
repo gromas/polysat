@@ -22,14 +22,27 @@ namespace PolySat
             new byte[] {1,1,1},
         };
 
+        /// <summary>
+        /// All posible states for combination 3 of n for output
+        /// </summary>
+        private static readonly int[][] vstates = new int[8][]
+        {
+            new int[] {-1,-1,-1},
+            new int[] {-1,-1, 1},
+            new int[] {-1, 1,-1},
+            new int[] {-1, 1, 1},
+            new int[] { 1,-1,-1},
+            new int[] { 1,-1, 1},
+            new int[] { 1, 1,-1},
+            new int[] { 1, 1, 1},
+        };
+
         private int state;
-        private readonly byte[] mask;
         private readonly Combination c;
 
         public CombinationState(Combination c, int state)
         {
             this.state = state;
-            mask = states[state];
             this.c = c;
         }
 
@@ -42,9 +55,9 @@ namespace PolySat
         {
             get
             {
-                if (varnum == c[0]) return mask[0];
-                if (varnum == c[1]) return mask[1];
-                if (varnum == c[2]) return mask[2];
+                if (varnum == c[0]) return states[state][0];
+                if (varnum == c[1]) return states[state][1];
+                if (varnum == c[2]) return states[state][2];
 
                 throw new IndexOutOfRangeException();
             }
@@ -55,7 +68,7 @@ namespace PolySat
 
         public override string ToString()
         {
-            return $"{(mask[0] == 0 ? c[0] :-c[0])} {(mask[1] == 0 ? c[1] : -c[1])} {(mask[2] == 0 ? c[2] : -c[2])} 0";
+            return $"{vstates[state][0] * c[0]} {vstates[state][1] * c[1]} {vstates[state][2] * c[2]} 0";
         }
     }
 }

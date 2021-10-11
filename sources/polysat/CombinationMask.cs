@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace PolySat
@@ -87,11 +86,29 @@ namespace PolySat
             {
                 if (this[c[i]] == NotSet)
                 {
+                    // single state can change two bits
                     changed = true;
                     this[c[i]] = s[c[i]];
                 }
             }
             return changed;
+        }
+
+        public bool ApplyStates(CombinationState s0, CombinationState s1)
+        {
+            Debug.Assert(s0.Combination.Equals(s1.Combination), "Can't apply states of two different combinations");
+            var c = s0.Combination;
+            for (int i = 0; i < 3; i++)
+            {
+                var s = s0[c[i]];
+                if (mask[c[i] - 1] == NotSet && s == s1[c[i]])
+                {
+                    mask[c[i] - 1] = s;
+                    // only one bit can be set from two compatible states
+                    return true;
+                }
+            }
+            return false;
         }
 
         public byte this[int index]
@@ -111,6 +128,15 @@ namespace PolySat
             StringBuilder b = new StringBuilder(mask.Length);
             for (int i = 0; i < mask.Length; i++) b.Append(mask[i] == 2 ? "x" : mask[i] == 1 ? "1" : "0");
             return b.ToString();
+        }
+
+        public int Size
+        {
+            get
+            {
+                var (_, size) = SplitMask();
+                return size;
+            }
         }
     }
 }

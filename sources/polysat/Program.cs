@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 
 namespace PolySat
 {
@@ -32,24 +31,25 @@ namespace PolySat
             var problem = ProblemLoader.Load(path);
             foreach(var p in problem)
             {
-                using (var w = new StreamWriter($"{path}.out", false))
-                {
-                    var store = new StateStore(p.VariableCount, w);
-                    w.WriteLine($"p cnf {p.VariableCount} 0");
- 
-                    store.AddConstraints(p.Constraints);
+                using var w = new StreamWriter($"{path}.out", false);
+                var store = new StateStore(p.VariableCount, w);
+                w.WriteLine($"p cnf {p.VariableCount} 0");
 
-                    Console.WriteLine($"{ DateTime.Now} Loaded problem file {path}");
-                    if (new ProblemCalculator(store).IsSatisfable())
-                    {
-                        Console.WriteLine($"{DateTime.Now} SAT");
-                        w.WriteLine("c SATISFABLE");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{DateTime.Now} UNSAT");
-                        w.WriteLine("c UNSATISFABLE");
-                    }
+                store.AddConstraints(p.Constraints);
+
+                Console.WriteLine($"{ DateTime.Now} Loaded problem file {path}");
+                var (satisfable, minMask) = new ProblemCalculator(store).IsSatisfable();
+                if (satisfable)
+                {
+                    Console.WriteLine($"{DateTime.Now} SAT {minMask}");
+                    w.WriteLine("c SATISFABLE");
+                    w.WriteLine($"c {minMask}");
+                }
+                else
+                {
+                    Console.WriteLine($"{DateTime.Now} UNSAT {minMask}");
+                    w.WriteLine("c UNSATISFABLE");
+                    w.WriteLine($"c {minMask}");
                 }
             }
         }

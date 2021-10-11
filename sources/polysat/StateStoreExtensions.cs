@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 
 namespace PolySat
 {
@@ -68,11 +65,15 @@ namespace PolySat
         public static IEnumerable<Combination> GetAllCombinations(this StateStore store)
         {
             for (int x0 = 1; x0 <= store.VariablesCount - 2; x0++)
+            {
                 for (int x1 = x0 + 1; x1 <= store.VariablesCount - 1; x1++)
+                {
                     for (int x2 = x1 + 1; x2 <= store.VariablesCount; x2++)
                     {
                         yield return new Combination(x0, x1, x2);
                     }
+                }
+            }
         }
     }
 }
