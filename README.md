@@ -19,4 +19,5 @@ PowerPoint presentation (Russian language only)
 Telegram group for discussions
 https://t.me/polysatgroup
 
-ATTENTION: Some UNSATisfable formulas with unsatisfable logical deadlocked loops this solver wrong marks as SATisfable. I works for this problem. Thank you for your patience.
+ATTENTION: Some UNSATisfable formulas with unsatisfable circular logical deadlocks this solver mark wrong as SATisfable. 
+           I works for solution of this problem. Thank you for your patience.
