@@ -1,6 +1,7 @@
 # polysat
 Polynomial 3-SAT solver
 
+based on a consensus algorithm with the removal of unwanted candidates
 
 No more questions about P=NP. 
 Now all 3-SAT problems can be divided into three groups SAT / UNSAT / CLD with O(n³) bytes of disk space and max O(n¹⁰) of time.
