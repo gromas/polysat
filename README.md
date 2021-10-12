@@ -22,5 +22,5 @@ ATTENTION: At this time all UNSATisfable problems whitch contains an CLD this so
            This is of current realisation problem not algorithmical.
            If you get an SAT result without fully filled mask then needed do try to build full vector for all n-vars.
            If vector exists then solution is a SATisfable. When not then CLD.
-           Vector builder is a fully polinomial based on general alghoritm.
+           Vector builder is a fully polinomial based on general alghoritm will be available soon.
            Now I works for solution of this problem. Thank you for your patience.
