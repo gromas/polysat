@@ -27,14 +27,14 @@ namespace PolySat
         /// </summary>
         private static readonly int[][] vstates = new int[8][]
         {
-            new int[] {-1,-1,-1},
-            new int[] {-1,-1, 1},
-            new int[] {-1, 1,-1},
-            new int[] {-1, 1, 1},
-            new int[] { 1,-1,-1},
-            new int[] { 1,-1, 1},
-            new int[] { 1, 1,-1},
             new int[] { 1, 1, 1},
+            new int[] { 1, 1,-1},
+            new int[] { 1,-1, 1},
+            new int[] { 1,-1,-1},
+            new int[] {-1, 1, 1},
+            new int[] {-1, 1,-1},
+            new int[] {-1,-1, 1},
+            new int[] {-1,-1,-1},
         };
 
         private int state;

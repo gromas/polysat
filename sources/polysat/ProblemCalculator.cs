@@ -84,7 +84,7 @@ namespace PolySat
                     maskChanged |= maskUpdate();
                 }
             } while (maskChanged);
-            // conflicts no longer exist -> returns true
+            // conflicts not exist
             int maskSize = mask.Size;
             if (maskSize < minmaskSize)
             {

@@ -73,5 +73,7 @@ namespace PolySat
 
         public int VariablesCount => n;
         public int CombinationsCount => states.Length;
+
+        public StreamWriter Writer => writer;
     }
 }
