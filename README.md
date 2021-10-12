@@ -18,7 +18,7 @@ PowerPoint presentation (Russian language only)
 Telegram group for discussions
 https://t.me/polysatgroup
 
-ATTENTION: At this time all UNSATisfable problems whitch contains an CLD this solver marks wrong as SATisfable.
+ATTENTION: At this time all problems whitch contains an CLD this solver marks wrong as SATisfable.
            This is of current realisation problem not algorithmical.
            If you get an SAT result without fully filled mask then needed do try to build full vector for all n-vars.
            If vector exists then solution is a SATisfable. When not then CLD.
