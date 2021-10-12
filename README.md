@@ -8,6 +8,8 @@ Now all 3-SAT problems can be divided into three groups SAT / UNSAT / CLD with O
 What is CLD?
 A sort of problems which contains some circular logical deadlocks. Now I investigate this group for possibilities to solve them.
 Currently there is no algorithm to correlate these sort of problems with one of the groups SAT/UNSAT with polynomial time and space.
+After get confirmation that the problem is CLD you can run another algorithm like DPLL (Davis-Putnam-Logemann-Loveland) for solving it
+since it takes much more time and space than this solution.
 
 YouTube video (Russian language only)
 https://youtu.be/hp9nAqIaRx4
