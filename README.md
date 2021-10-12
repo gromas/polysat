@@ -1,14 +1,9 @@
 # polysat
-Polynomial 3-SAT solver
+Polynomial 3-SAT splitter
 
 
-No more questions about P=NP.
-
-This is the stopping point.
-
-It is a polynomial 3-SAT solver that uses O(n³) bytes of disk space to compute SAT / UNSAT in O (n¹⁰) time.
-
-Welcome to the new POLYNOMIAL World!
+No more questions about P=NP. 
+Now all 3-SAT problems can be divided into three groups SAN / UNSAT / CLD with O(n³) bytes of disk space and O (n¹⁰) of time.
 
 YouTube video (Russian language only)
 https://youtu.be/hp9nAqIaRx4
@@ -19,5 +14,5 @@ PowerPoint presentation (Russian language only)
 Telegram group for discussions
 https://t.me/polysatgroup
 
-ATTENTION: Some UNSATisfable formulas with unsatisfable circular logical deadlocks this solver mark wrong as SATisfable. 
+ATTENTION: At this time all UNSATisfable problems whitch contains an unsatisfable circular logical deadlocks (CLD) this solver mark wrong as SATisfable.
            I works for solution of this problem. Thank you for your patience.
