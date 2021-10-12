@@ -11,8 +11,6 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="ProblemCalculator2.cs" />
   </ItemGroup>
