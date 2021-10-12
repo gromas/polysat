@@ -6,7 +6,7 @@ No more questions about P=NP.
 Now all 3-SAT problems can be divided into three groups SAT / UNSAT / CLD with O(n³) bytes of disk space and max O(n¹⁰) of time.
 
 What is CLD?
-This sort of problems contains some circular logical deadlocks. Now I investigate this group for possibilities to solve them.
+A sort of problems which contains some circular logical deadlocks. Now I investigate this group for possibilities to solve them.
 Currently there is no algorithm to correlate these sort of problems with one of the groups SAT/UNSAT with polynomial time and space.
 
 YouTube video (Russian language only)
