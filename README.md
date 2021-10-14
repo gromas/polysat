@@ -2,10 +2,10 @@
  **The polynomial 3-SAT solver**
  *based on a consensus algorithm with the removal of unwanted candidates*
  
- **Lightweight algorithm version** Full version: https://github.com/gromas/polysat
+ **Lightweight algorithm version** 
 
-No more questions about P=NP. 
-Now all 3-SAT problems can be divided into three groups SAT / UNSAT / CLD with O(n³) bytes of disk space and max O(n¹⁰) of time.
+Lightweight version can divide all 3-SAT problems three groups SAT / UNSAT / CLD with O(n³) bytes of disk space and max O(n¹⁰) of time.
+If you want solution with solved CLD problem please lock for full version: https://github.com/gromas/polysat
 
 What is CLD?
 A sort of problems which contains some circular logical deadlocks. Now I investigate this group for possibilities to solve them.
