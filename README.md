@@ -4,7 +4,8 @@
  
  **Lightweight algorithm version** 
 
-Lightweight version can divide all 3-SAT problems three groups SAT / UNSAT / CLD with O(n³) bytes of disk space and max O(n¹⁰) of time.
+Lightweight version can divide all 3-SAT problems to three groups SAT / UNSAT / CLD with O(n³) bytes of disk space and max O(n¹⁰) of time.
+
 If you want solution with solved CLD problem please lock for full version: https://github.com/gromas/polysat
 
 What is CLD?
