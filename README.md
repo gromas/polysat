@@ -9,8 +9,9 @@ Lightweight version can divide all 3-SAT problems to three groups SAT / UNSAT / 
 If you want solution with solved CLD problem please lock for full version: https://github.com/gromas/polysat
 
 What is CLD?
-A sort of problems which contains some circular logical deadlocks. Now I investigate this group for possibilities to solve them.
-Currently there is no algorithm to correlate these sort of problems with one of the groups SAT/UNSAT with polynomial time and space.
+
+A sort of problems which contains some circular logical deadlocks. Now I investigate this group and solve them.
+A lightweight version of polysat algorithm can't correlate these sort of problems with one of the groups SAT/UNSAT with polynomial time and space.
 After get confirmation that the problem is CLD you can run another algorithm like DPLL (Davis-Putnam-Logemann-Loveland) for solving it
 since DPLL takes much more time and space than this solution.
 
@@ -25,11 +26,11 @@ PowerPoint presentation (Russian language only)
 Telegram group for discussions
 https://t.me/polysatgroup
 
-ATTENTION: At this time all problems whitch contains an CLD this solver marks wrong as SATisfable.
+ATTENTION: At this version all problems whitch contains an CLD solver marks wrong as SATisfable.
            This is of current realisation problem not algorithmical.
            If you get an SAT result without fully filled mask then needed do try to build full vector for all n-vars.
            If vector exists then solution is a SATisfable. When not then CLD.
            Vector builder is a fully polinomial based on general alghoritm will be available soon.
            ~~Now I works for solution of this problem. Thank you for your patience.~~
-           New version free from CLD problem can be found at https://github.com/gromas/polysat
+           New version than free from CLD problem can be found at https://github.com/gromas/polysat
          
