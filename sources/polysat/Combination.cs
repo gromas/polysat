@@ -1,9 +1,12 @@
-﻿namespace PolySat
+﻿using System;
+using System.Collections.Generic;
+
+namespace PolySat
 {
     /// <summary>
     /// Combination: represents an combination 3 of n
     /// </summary>
-    public struct Combination
+    public class Combination
     {
         private readonly int[] x;
         public Combination(int x0, int x1, int x2)
@@ -22,6 +25,11 @@
         public override string ToString()
         {
             return $"{{{x[0]},{x[1]},{x[2]}}}";
+        }
+
+        public bool Equals(Combination other)
+        {
+            return other.x[0] == x[0] && other.x[1] == x[1] && other.x[2] == x[2];
         }
     }
 }
