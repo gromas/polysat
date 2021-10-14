@@ -12,10 +12,8 @@ What is CLD?
 
 A sort of problems which contains some circular logical deadlocks. Now I investigate this group and solve them.
 A lightweight version of polysat algorithm can't correlate these sort of problems with one of the groups SAT/UNSAT with polynomial time and space.
-After get confirmation that the problem is CLD you can run another algorithm like DPLL (Davis-Putnam-Logemann-Loveland) for solving it
-since DPLL takes much more time and space than this solution.
-
-New version free from CLD problem can be found at https://github.com/gromas/polysat/tree/extended_vector
+After get confirmation that the problem is CLD you can run full version of algorithm to solve them.
+Full version of algorithm can be found at https://github.com/gromas/polysat
 
 YouTube video (Russian language only)
 https://youtu.be/hp9nAqIaRx4
