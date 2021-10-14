@@ -2,7 +2,7 @@
  **The polynomial 3-SAT solver**
  *based on a consensus algorithm with the removal of unwanted candidates*
  
- **Lightweight algorithm version**
+ **Lightweight algorithm version** Full version: https://github.com/gromas/polysat
 
 No more questions about P=NP. 
 Now all 3-SAT problems can be divided into three groups SAT / UNSAT / CLD with O(n³) bytes of disk space and max O(n¹⁰) of time.
@@ -30,5 +30,5 @@ ATTENTION: At this time all problems whitch contains an CLD this solver marks wr
            If vector exists then solution is a SATisfable. When not then CLD.
            Vector builder is a fully polinomial based on general alghoritm will be available soon.
            ~~Now I works for solution of this problem. Thank you for your patience.~~
-           New version free from CLD problem can be found at https://github.com/gromas/polysat/tree/extended_vector
+           New version free from CLD problem can be found at https://github.com/gromas/polysat
          
