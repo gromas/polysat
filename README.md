@@ -1,7 +1,6 @@
 # polysat
-Polynomial 3-SAT solver
-
-based on a consensus algorithm with the removal of unwanted candidates
+**The polynomial 3-SAT solver**
+*based on a consensus algorithm with the removal of unwanted candidates*
 
 No more questions about P=NP. 
 Now all 3-SAT problems can solved with O(2n⁴) bytes of disk space and O(n¹⁰) of time.
