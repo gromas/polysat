@@ -22,7 +22,8 @@ namespace PolySat
 
                 foreach(var c in store.Combinations)
                 {
-                onRemoved:
+                    bool removed = false;
+
                     var cv = store.GetVectors(c).ToArray();
                     if (cv.Length == 0)
                     {
@@ -41,7 +42,8 @@ namespace PolySat
                                 case 0:
                                     s.IsRemoved = true;
                                     changed = true;
-                                    goto onRemoved;
+                                    removed = true;
+                                    break;
                                 case 1:
                                     var ext = s.ExtendTo(compatible[0]);
                                     changed |= ext;
@@ -55,7 +57,9 @@ namespace PolySat
                                     }
                                     break;
                             }
+                            if (removed) break;
                         }
+                        if (removed) break;
                     }
                 }
             } while (changed);
