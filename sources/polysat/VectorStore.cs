@@ -107,18 +107,6 @@ namespace PolySat
             }
         }
 
-        public IEnumerable<Vector> GetRemoved(Combination c)
-        {
-            int index = GetIndex(c[0], c[1], c[2]);
-            for (int i = 0; i < 8; i++)
-            {
-                var state = new ArraySegment<byte>(bytes, (index * 8 + i) * vectorSize, vectorSize);
-                var v = new Vector(n, c, state);
-                if (v.IsRemoved) yield return v;
-            }
-        }
-
-
         public IEnumerable<Vector> GetCompatible(Combination c, Vector s)
         {
             var vv = GetVectors(c).ToArray();
@@ -178,6 +166,17 @@ namespace PolySat
                 }
                 else
                     throw new Exception("literal count must be 2 or 3");
+            }
+        }
+
+        public IEnumerable<Vector> GetRemoved(Combination c)
+        {
+            int index = GetIndex(c[0], c[1], c[2]);
+            for (int i = 0; i < 8; i++)
+            {
+                var state = new ArraySegment<byte>(bytes, (index * 8 + i) * vectorSize, vectorSize);
+                var v = new Vector(n, c, state);
+                if (v.IsRemoved) yield return v;
             }
         }
     }

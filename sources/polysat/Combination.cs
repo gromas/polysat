@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace PolySat
+﻿namespace PolySat
 {
     /// <summary>
     /// Combination: represents an combination 3 of n
