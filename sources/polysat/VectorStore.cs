@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace PolySat
 {
@@ -120,7 +121,8 @@ namespace PolySat
 
         public IEnumerable<Vector> GetCompatible(Combination c, Vector s)
         {
-            foreach(var v in GetVectors(c))
+            var vv = GetVectors(c).ToArray();
+            foreach (var v in vv)
             {
                 if (v.IsRemoved) continue;
                 if (s.IsCompatible(v))

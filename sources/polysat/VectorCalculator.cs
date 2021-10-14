@@ -43,58 +43,26 @@ namespace PolySat
                             switch (compatible.Length)
                             {
                                 case 0:
-                                    store.AddConstraint(
-                                        s.GetValue(c[0]) > 0 ? c[0] : -c[0],
-                                        s.GetValue(c[1]) > 0 ? c[1] : -c[1],
-                                        s.GetValue(c[2]) > 0 ? c[2] : -c[2]);
-                                    //s.IsRemoved = true;
+                                    s.IsRemoved = true;
                                     changed = true;
                                     goto onRemoved;
                                 case 1:
                                     var ext = s.ExtendTo(compatible[0]);
                                     changed |= ext;
                                     break;
-                                case 2:
-                                    break;
                                 default:
+                                    var (group, gc) = s.Group(compatible);
+                                    if (gc != 0)
+                                    {
+                                        var extg = s.ExtendTo(group);
+                                        changed |= extg;
+                                    }
                                     break;
                             }
-                            //Console.WriteLine(s);
-                            //changed = true;
                         }
                     }
                 }
             } while (changed);
-
-            // check removed
-
-            foreach (var c in store.Combinations)
-            {
-                foreach(var s in store.GetRemoved(c))
-                {
-                    w.WriteLine($"{s}");
-
-                    foreach (var cc in store.Combinations)
-                    {
-                        if (cc.Equals(c)) continue;
-
-                        var compatible = store.GetCompatible(cc, s).ToArray();
-
-                        switch (compatible.Length)
-                        {
-                            case 0:
-                                break;
-                            default:
-                                foreach(var cs in compatible)
-                                {
-                                    w.WriteLine($"{cs}");
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-
 
             return true;
         }
