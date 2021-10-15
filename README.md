@@ -1,5 +1,5 @@
 # polysat
-**The polynomial 3-SAT solver**
+**The fully polynomial 3-SAT solver**
 *based on a consensus algorithm with the removal of unwanted candidates*
 
 No more questions about P=NP.
