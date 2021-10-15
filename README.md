@@ -14,4 +14,9 @@ PowerPoint presentation (Russian language only) docs/polysat.pptx
 Telegram group for discussions
 https://t.me/polysatgroup
 
-Lightweight version can be found here: https://github.com/gromas/polysat/tree/lightweight
+Lightweight version can be found here:
+https://github.com/gromas/polysat/tree/lightweight
+
+
+Подробное описание работы алгоритма с ответами на воросы
+https://github.com/gromas/polysat/wiki/Description
