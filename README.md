@@ -18,5 +18,5 @@ Lightweight version can be found here:
 https://github.com/gromas/polysat/tree/lightweight
 
 
-Подробное описание работы алгоритма с ответами на воросы
+Algorithm description and anwers (russian)
 https://github.com/gromas/polysat/wiki/Description
