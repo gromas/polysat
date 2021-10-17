@@ -7,7 +7,7 @@ No more questions about P=NP.
 Now any 3-SAT problem can be solved with O(2n⁴) bytes of disk space and O(n¹⁰) of time.
 
 TODO: (At this time this is not released feature)
-If solver answer is "SAT" then solutions exists and we can observe any one without use additional space and for polinomial time. In this case we can fix any posible assignment of variables from any vector of combinations from solution kernel (at least 3 and up to n variables assigments in some cases). While the kernel is a superposition of all possible solutions then observation of one destroys kernel. If we want observe some more other solutions we must have additional 2n⁴ disk space for save kernel state. 
+If solver answer is "SAT" then solutions exists and we can observe any one without use additional space and for polinomial time. In this case we can fix any posible assignment of variables from any vector of combinations from solution kernel (at least 3 and up to n variables assigments in some cases). While the kernel is a superposition of all possible solutions then observation of one destroys kernel. If we want to observe some more other solutions we must have additional 2n⁴ disk space for save kernel state. 
 
 YouTube video (Russian language only)
 https://youtu.be/hp9nAqIaRx4
