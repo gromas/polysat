@@ -4,7 +4,7 @@
 
 No more questions about P=NP.
 
-Now all 3-SAT problems can be solved with O(2n⁴) bytes of disk space and O(n¹⁰) of time.
+Now any 3-SAT problem can be solved with O(2n⁴) bytes of disk space and O(n¹⁰) of time.
 
 YouTube video (Russian language only)
 https://youtu.be/hp9nAqIaRx4
