@@ -17,7 +17,7 @@ namespace PolySat
             {
                 changed = false;
 
-                foreach(var c in store.Combinations)
+                foreach (var c in store.Combinations)
                 {
                     bool removed = false;
 
@@ -36,7 +36,7 @@ namespace PolySat
                             {
                                 case 0:
                                     if (vectors.Length == 1) return false;
-                                    vector.IsRemoved = true;
+                                    vector.Remove();
                                     changed = true;
                                     removed = true;
                                     break;
@@ -45,11 +45,14 @@ namespace PolySat
                                     changed |= ext;
                                     break;
                                 default:
-                                    var (group, gc) = vector.Group(compatible);
-                                    if (gc != 0)
+                                    //if (vectors.Length > depth)
                                     {
-                                        var extg = vector.ExtendTo(group);
-                                        changed |= extg;
+                                        var (group, gc) = vector.Group(compatible);
+                                        if (gc != 0)
+                                        {
+                                            var extg = vector.ExtendTo(group);
+                                            changed |= extg;
+                                        }
                                     }
                                     break;
                             }

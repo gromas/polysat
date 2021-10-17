@@ -1,171 +1,101 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace PolySat
 {
-    /// <summary>
-    /// Combination full vector class
-    /// </summary>
     public class Vector
     {
-        const int NotSet = 2;
-        private readonly VectorStore store; 
-        private readonly uint index;
-        private readonly ArraySegment<byte> state;
-        private Vector(VectorStore store, ArraySegment<byte> state)
+        private readonly VectorStore store;
+        private readonly int index;
+        private readonly ArraySegment<uint> data;
+        private readonly ArraySegment<uint> mask;
+        public Vector(VectorStore store, int index, ArraySegment<uint> data, ArraySegment<uint> mask)
         {
             this.store = store;
-            this.state = state;
-        }
-        public Vector(VectorStore store, uint index) : 
-            this(store, new ArraySegment<byte>(store.Bytes, (int)(index * store.VectorSize), (int)store.VectorSize))
-        {
             this.index = index;
-        }
-        public Vector(VectorStore store) : this(store, new byte[store.VectorSize])
-        {
+            this.data = data;
+            this.mask = mask;
         }
 
-        public bool IsRemoved
+        public void SetBit(int x, int value)
         {
-            get
+            int shift = (x - 1) % 32;
+            var index = (x - 1 - shift) / 32;
+            mask[index] |= (uint)(1 << shift);
+            data[index] |= (uint)(value << shift);
+        }
+
+        public (Vector, int) Group(Vector[] vectors)
+        {
+            int gs = 0;
+            uint[] groupmask = new uint[mask.Count];
+            uint[] groupdata = new uint[mask.Count];
+            // create group vector outside store
+            for (int i = 0; i < mask.Count; i++)
             {
-                return store.IsRemoved(index);
+                // считаем маску группы
+                groupdata[i] = 0;
+                groupmask[i] = ~mask[i];
+                foreach (var v in vectors)
+                {
+                    // считаем текущую маску группы
+                    groupmask[i] &= v.mask[i];
+                    // сбрасываем ранее установленные биты, если маска совместимости уменьшилась
+                    groupdata[i] &= groupmask[i];
+                    // считаем несовместимые биты
+                    uint uncomp = groupdata[i] ^ (v.data[i] & groupmask[i]);
+                    // убираем маску по несовместимым битам
+                    groupmask[i] &= ~uncomp;
+                    groupdata[i] &= groupmask[i];
+                }
+                if (groupmask[i] > 0) gs++;
             }
-            set
+            
+            var group = new Vector(store, -1, groupdata, groupmask);
+
+            return (group, gs);
+        }
+
+        public bool IsCompatible(Vector v)
+        {
+            for (int i = 0; i < mask.Count; i++)
             {
-                if (!value) throw new Exception("can't restore");
-                store.Remove(index);
+                // проверяем соответствие битов, установленных в обоих векторах
+                uint groupmask = mask[i] & v.mask[i];
+                if (groupmask == 0) continue;
+                if ((data[i] & groupmask) != (v.data[i] & groupmask)) return false;
             }
-        }
-
-        private int GetValue(uint x)
-        {
-            x -= 1;
-            var b = (x - x % 4) / 4;
-            var bp = (3 - x % 4) * 2;
-            return (state[(int)b] >> (int)bp) & 3;
-        }
-
-        /// <summary>
-        /// Set vector variable value
-        /// </summary>
-        /// <param name="state">vector state</param>
-        /// <param name="x">variable index</param>
-        /// <param name="v">value</param>
-        public void SetValue(uint x, int v)
-        {
-            x -= 1;
-            uint b = (x - x % 4) / 4;
-            uint bp = (3 - x % 4) * 2;
-
-            int s0 = 3 << (int)bp;
-            int s1 = (state[(int)b] ^ 0xFF) | s0;
-            int s2 = (s1 & ((v << (int)bp) ^ 0xFF)) ^ 0xFF;
-
-            state[(int)b] = (byte)s2;
+            return true;
         }
 
         public bool ExtendTo(Vector v)
         {
             bool changed = false;
-            for (uint i = 1; i <= store.VariablesCount; i++)
+            for (int i = 0; i < mask.Count; i++)
             {
-                var thisValue = GetValue(i);
-                if (thisValue != NotSet) continue;
-
-                var otherValue = v.GetValue(i);
-                if (otherValue == NotSet) continue;
-
-                SetValue(i, otherValue);
-                changed = true;
+                uint d = data[i];
+                uint m = mask[i];
+                uint groupmask = ~mask[i] & v.mask[i];
+                data[i] |= v.data[i] & groupmask;
+                mask[i] |= groupmask;
+                changed |= d != data[i] || m != mask[i];
             }
             return changed;
         }
 
-        public (Vector, int) Group(Vector[] compatible)
-        {
-            uint gs = store.VariablesCount;
-            var group = new Vector(store);
-
-            for (uint i = 1; i <= store.VariablesCount; i++)
-            {
-                group.SetValue(i, NotSet);
-                int gvv = NotSet;
-                foreach (var v in compatible)
-                {
-                    int vv = v.GetValue(i);
-                    if (vv == NotSet)
-                    {
-                        group.SetValue(i, NotSet);
-                        gs--;
-                        break;
-                    }
-                    if (gvv != NotSet && gvv != vv)
-                    {
-                        group.SetValue(i, NotSet);
-                        gs--;
-                        break;
-                    }
-                    if (gvv == NotSet)
-                    {
-                        group.SetValue(i, vv);
-                        gvv = vv;
-                    }
-                }
-                int cv = GetValue(i);
-                if (cv != NotSet && cv == group.GetValue(i))
-                {
-                    gs--;
-                }
-            }
-            return (group, (int)gs);
-        }
-
-        public bool IsCompatible(Vector v)
-        {
-            bool compatible = true;
-            for (uint i = 1; i <= store.VariablesCount; i++)
-            {
-                var thisValue = GetValue(i);
-                // notset compatible with any other
-                if (thisValue == NotSet) continue;
-                
-                var otherValue = v.GetValue(i);
-                if (otherValue == NotSet) continue;
-
-                if (thisValue != otherValue)
-                {
-                    compatible = false;
-                    break;
-                }
-            }
-            return compatible;
-        }
+        public bool Removed => store.VectorRemoved(index);
+        public void Remove() => store.RemoveVector(index);
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder((int)store.VariablesCount);
+            StringBuilder sb = new StringBuilder(store.VariablesCount);
             for (int i = 0; i < store.VariablesCount; i++)
             {
-                var b = (i - i % 4) / 4;
-                var s = (3 - i % 4) * 2;
-                sb.Append(((state[b] >> s) & 3) == NotSet ? "x" : ((state[b] >> s) & 3) == 1 ? "1" : "0");
+                int shift = i % 32;
+                var index = (i - shift) / 32;
+                sb.Append(((mask[index] >> shift) & 1) == 0 ? "x" : ((data[index] >> shift) & 1) == 1 ? "1" : "0");
             }
-            if (IsRemoved) sb.Append("--");
             return sb.ToString();
-        }
-
-        public Vector Clone()
-        {
-            return new Vector(store, state.ToArray());
-        }
-
-        public IEnumerable<Vector> GetCompatible(IEnumerable<Vector> s)
-        {
-            return s.Where(v => IsCompatible(v));
         }
     }
 }
