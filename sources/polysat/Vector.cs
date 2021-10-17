@@ -97,5 +97,7 @@ namespace PolySat
             }
             return sb.ToString();
         }
+
+        public int Index => index;
     }
 }

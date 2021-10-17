@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace PolySat
 {
@@ -70,13 +71,37 @@ namespace PolySat
             return s0 + s1 + s2;
         }
 
-        public IEnumerable<Combination> Combinations
+        public IEnumerable<Combination> Combinations()
         {
-            get
+            for (int index = 0; index < combinationsCount; index++)
             {
-                for (int index = 0; index < combinationsCount; index++)
+                yield return new Combination(this, index);
+            }
+        }
+
+        /// TODO: must we check all vectors of all combinations for current vector or only compatible for mask???
+        public IEnumerable<Combination> Combinations(Vector v)
+        {
+            var mask = new ArraySegment<uint>(vectormask, v.Index * vectorSize, vectorSize);
+            var setbits = MaskSetBits(mask).ToHashSet();
+
+            var p = CombinationsTuples.Where(t=>setbits.Contains(t.Item1) || setbits.Contains(t.Item2) || setbits.Contains(t.Item3));
+
+            foreach(var s in p)
+            {
+                yield return new Combination(this, GetIndex(s));
+            }
+        }
+
+        private IEnumerable<int> MaskSetBits(ArraySegment<uint> mask)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                int shift = (i - 1) % 32;
+                var index = (i - 1 - shift) / 32;
+                if (((mask[index] >> shift) & 1) == 1)
                 {
-                    yield return new Combination(this, index);
+                    yield return i;
                 }
             }
         }

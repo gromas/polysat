@@ -17,7 +17,7 @@ namespace PolySat
             {
                 changed = false;
 
-                foreach (var c in store.Combinations)
+                foreach (var c in store.Combinations())
                 {
                     bool removed = false;
 
@@ -26,7 +26,7 @@ namespace PolySat
 
                     foreach (var vector in vectors)
                     {
-                        foreach (var cc in store.Combinations)
+                        foreach (var cc in store.Combinations(vector))
                         {
                             if (cc.Equals(c)) continue;
 
