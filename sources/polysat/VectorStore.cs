@@ -1,26 +1,31 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 
 namespace PolySat
 {
     public class VectorStore
     {
-        const int NotSet = 2;
-        private readonly int n;
+        const byte NotSet = 0xAA;
         private readonly byte[] bytes;
-        private readonly int vectorSize;
-        private readonly StreamWriter w;
-        public VectorStore(int n, StreamWriter w)
+        private readonly uint n;
+        private readonly uint combinationsCount;
+        private readonly uint vectorSize;
+        private readonly BitArray removed;
+
+        public VectorStore(uint n)
         {
-            this.w = w;
             this.n = n;
+            //
+            combinationsCount = n * (n - 1) * (n - 2) / 6;
             // one byte for each four bytes of vector and one byte for vector state
             vectorSize = (n - n % 4) / 4 + 1;
             // two bits to store each bit of veсtor
-            bytes = new byte[8 * vectorSize * n * (n - 1) * (n - 2) / 6];
+            bytes = new byte[8 * vectorSize * combinationsCount];
+
+
+            removed = new BitArray((int)(8 * combinationsCount));
 
             Initialize();
         }
@@ -31,92 +36,59 @@ namespace PolySat
         private void Initialize()
         {
             // clean all vector states
-            for(int p = 0; p < bytes.Length; p++)
+            for (int p = 0; p < bytes.Length; p++)
             {
-                bytes[p] = 0xAA;
+                bytes[p] = NotSet;
             }
-            foreach (var c in Combinations)
+            foreach (Tuple<uint, uint, uint> ct in CombinationsTuples)
             {
-                var index = GetIndex(c[0], c[1], c[2]);
-                for (int i = 0; i < 8; i++)
+                uint index = GetIndex(ct);
+                for (uint i = 0; i < 8; i++)
                 {
-                    var state = new ArraySegment<byte>(bytes, (index * 8 + i) * vectorSize, vectorSize);
-                    SetValue(state, c[0], (i >> 2) & 1);
-                    SetValue(state, c[1], (i >> 1) & 1);
-                    SetValue(state, c[2], i & 1);
+                    var vector = new Vector(this, index * 8 + i);
+                    vector.SetValue(ct.Item1, (int)(i >> 2) & 1);
+                    vector.SetValue(ct.Item2, (int)(i >> 1) & 1);
+                    vector.SetValue(ct.Item3, (int)i & 1);
                 }
             }
-        }
-
-        private void SetValue(ArraySegment<byte> state, int x, int v)
-        {
-            x -= 1;
-            int b = (x - x % 4) / 4;
-            int bp = (3 - x % 4) * 2;
-
-            int s0 = 3 << bp;
-            int s1 = (state[b] ^ 0xFF) | s0;
-            int s2 = (s1 & ((v << bp) ^ 0xFF)) ^ 0xFF;
-
-            state[b] = (byte)s2;
         }
 
         /// <summary>
         /// Calculates unique index corellated with {a,b,c} of n
         /// </summary>
-        private int GetIndex(int a, int b, int c)
+        private uint GetIndex(Tuple<uint, uint, uint> x)
         {
-            Debug.Assert(0 < a && a < b && b < c && c <= n, "Index out of range");
+            Debug.Assert(x.Item1 < x.Item2 && x.Item2 < x.Item3 && x.Item3 <= n, "Index out of range");
 
-            var s0 = c - b - 1;
-            var s1 = (1 + a - b) * (a + b - 2 * n) / 2;
-            var s2 = (a - 1) * (3 * n * n - 3 * n * a - 3 * n + a * a + a) / 6;
+            uint s0 = x.Item3 - x.Item2 - 1;
+            uint s1 = (1 + x.Item1 - x.Item2) * (x.Item1 + x.Item2 - 2 * n) / 2;
+            uint s2 = (x.Item1 - 1) * (3 * n * n - 3 * n * x.Item1 - 3 * n + x.Item1 * x.Item1 + x.Item1) / 6;
 
             return s0 + s1 + s2;
+        }
+
+        public IEnumerable<Combination> Combinations
+        {
+            get
+            {
+                for (uint index = 0; index < combinationsCount; index++)
+                {
+                    yield return new Combination(this, index);
+                }
+            }
         }
 
         /// <summary>
         /// Returns all cobinations 3 of n
         /// </summary>
-        public IEnumerable<Combination> Combinations
+        private IEnumerable<Tuple<uint, uint, uint>> CombinationsTuples
         {
             get
             {
-                for (int x0 = 1; x0 <= n - 2; x0++)
-                {
-                    for (int x1 = x0 + 1; x1 <= n - 1; x1++)
-                    {
-                        for (int x2 = x1 + 1; x2 <= n; x2++)
-                        {
-                            yield return new Combination(x0, x1, x2);
-                        }
-                    }
-                }
-            }
-        }
-
-        public IEnumerable<Vector> GetVectors(Combination c)
-        {
-            int index = GetIndex(c[0], c[1], c[2]);
-
-            for (int i = 0; i < 8; i++)
-            {
-                var state = new ArraySegment<byte>(bytes, (index * 8 + i) * vectorSize, vectorSize);
-                var v = new Vector(n, c, state);
-                if (!v.IsRemoved) yield return v;
-            }
-        }
-
-        public IEnumerable<Vector> GetCompatible(Combination c, Vector s)
-        {
-            var vv = GetVectors(c).ToArray();
-            foreach (var v in vv)
-            {
-                if (v.IsRemoved) continue;
-                if (s.IsCompatible(v))
-                {
-                    yield return v;
-                }
+                for (uint x0 = 1; x0 <= n - 2; x0++)
+                    for (uint x1 = x0 + 1; x1 <= n - 1; x1++)
+                        for (uint x2 = x1 + 1; x2 <= n; x2++)
+                            yield return new Tuple<uint, uint, uint>(x0, x1, x2);
             }
         }
 
@@ -124,13 +96,8 @@ namespace PolySat
         {
             var x = Utils.SortByAbs(a, b, c);
             var i = (x[2][1] > 0 ? 1 : 0) + (x[1][1] > 0 ? 2 : 0) + (x[0][1] > 0 ? 4 : 0);
-            var index = GetIndex(x[0][0], x[1][0], x[2][0]);
-
-            ArraySegment<byte> state = new ArraySegment<byte>(bytes, (index * 8 + i) * vectorSize, vectorSize);
-
-            w.WriteLine($"{x[0][1]} {x[1][1]} {x[2][1]} 0");
-            
-            state[state.Count - 1] |= 1;
+            var index = GetIndex(new Tuple<uint, uint, uint>((uint)x[0][0], (uint)x[1][0], (uint)x[2][0]));
+            new Vector(this, (uint)(index * 8 + i)).IsRemoved = true;
         }
 
         /// <summary>
@@ -169,15 +136,27 @@ namespace PolySat
             }
         }
 
-        public IEnumerable<Vector> GetRemoved(Combination c)
-        {
-            int index = GetIndex(c[0], c[1], c[2]);
-            for (int i = 0; i < 8; i++)
-            {
-                var state = new ArraySegment<byte>(bytes, (index * 8 + i) * vectorSize, vectorSize);
-                var v = new Vector(n, c, state);
-                if (v.IsRemoved) yield return v;
-            }
-        }
+        /// <summary>
+        /// Variables count n
+        /// </summary>
+        public uint VariablesCount => n;
+
+        /// <summary>
+        /// Total n by 3 combinations count
+        /// </summary>
+        public uint CombinationCount => combinationsCount;
+
+        /// <summary>
+        /// Vector size in bytes
+        /// </summary>
+        public uint VectorSize => vectorSize;
+
+        /// <summary>
+        /// Returns full storage byteset
+        /// </summary>
+        public byte[] Bytes => bytes;
+        public bool IsRemoved(uint index) => removed[(int)index];
+        public void Remove(uint index) => removed[(int)index] = true;
+        
     }
 }

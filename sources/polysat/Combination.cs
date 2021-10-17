@@ -1,32 +1,56 @@
-﻿namespace PolySat
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace PolySat
 {
     /// <summary>
     /// Combination: represents an combination 3 of n
     /// </summary>
     public class Combination
     {
-        private readonly int[] x;
-        public Combination(int x0, int x1, int x2)
-        {
-            x = Utils.Sort(x0, x1, x2);
-        }
+        private readonly VectorStore store;
+        private readonly uint index;
 
-        public int this[int index]
+        public Combination(VectorStore store, uint index)
         {
-            get
-            {
-                return x[index];
-            }
-        }
-
-        public override string ToString()
-        {
-            return $"{{{x[0]},{x[1]},{x[2]}}}";
+            this.store = store;
+            this.index = index;
         }
 
         public bool Equals(Combination other)
         {
-            return other.x[0] == x[0] && other.x[1] == x[1] && other.x[2] == x[2];
+            return index == other.index;
         }
+
+        public IEnumerable<Vector> GetVectors()
+        {
+            for (uint i = 0; i < 8; i++)
+            {
+                var v = new Vector(store, index * 8 + i);
+                if (!v.IsRemoved) yield return v;
+            }
+        }
+
+        public IEnumerable<Vector> GetCompatible(Vector s)
+        {
+            var vv = GetVectors();
+            foreach (var v in vv)
+            {
+                if (v.IsRemoved) continue;
+                if (s.IsCompatible(v))
+                {
+                    yield return v;
+                }
+            }
+        }
+
+        public uint Index => index;
+
+        /// TODO:
+        //public override string ToString()
+        //{
+        //    return $"{{{x[0]},{x[1]},{x[2]}}}";
+        //}
     }
 }

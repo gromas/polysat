@@ -13,7 +13,7 @@ namespace PolySat
     {
         public struct Problem
         {
-            public int VariableCount;
+            public uint VariableCount;
             public IEnumerable<int[]> Constraints;
         }
 
@@ -34,7 +34,7 @@ namespace PolySat
                         var mrp = rp.Match(l);
                         if (mrp.Success)
                         {
-                            var variableCount = int.Parse(mrp.Groups[1].Value);
+                            var variableCount = uint.Parse(mrp.Groups[1].Value);
 
                             yield return new Problem { VariableCount = variableCount, Constraints = ParseSet(r) };
                             yield break;

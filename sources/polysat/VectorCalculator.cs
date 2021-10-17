@@ -1,15 +1,12 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 
 namespace PolySat
 {
     public class VectorCalculator
     {
-        private readonly StreamWriter w;
         private readonly VectorStore store;
-        public VectorCalculator(VectorStore store, StreamWriter w)
+        public VectorCalculator(VectorStore store)
         {
-            this.w = w;
             this.store = store;
         }
 
@@ -24,35 +21,34 @@ namespace PolySat
                 {
                     bool removed = false;
 
-                    var cv = store.GetVectors(c).ToArray();
-                    if (cv.Length == 0)
-                    {
-                        return false;
-                    }
-                    foreach (var s in cv)
+                    var vectors = c.GetVectors().ToArray();
+                    if (vectors.Length == 0) return false;
+
+                    foreach (var vector in vectors)
                     {
                         foreach (var cc in store.Combinations)
                         {
                             if (cc.Equals(c)) continue;
 
-                            var compatible = store.GetCompatible(cc, s).ToArray();
+                            var compatible = cc.GetCompatible(vector).ToArray();
 
                             switch (compatible.Length)
                             {
                                 case 0:
-                                    s.IsRemoved = true;
+                                    if (vectors.Length == 1) return false;
+                                    vector.IsRemoved = true;
                                     changed = true;
                                     removed = true;
                                     break;
                                 case 1:
-                                    var ext = s.ExtendTo(compatible[0]);
+                                    var ext = vector.ExtendTo(compatible[0]);
                                     changed |= ext;
                                     break;
                                 default:
-                                    var (group, gc) = s.Group(compatible);
+                                    var (group, gc) = vector.Group(compatible);
                                     if (gc != 0)
                                     {
-                                        var extg = s.ExtendTo(group);
+                                        var extg = vector.ExtendTo(group);
                                         changed |= extg;
                                     }
                                     break;

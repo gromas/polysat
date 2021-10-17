@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace PolySat
@@ -9,93 +11,75 @@ namespace PolySat
     public class Vector
     {
         const int NotSet = 2;
-        private readonly Combination combination;
+        private readonly VectorStore store; 
+        private readonly uint index;
         private readonly ArraySegment<byte> state;
-        private readonly int n;
-        public Vector(int n, Combination combination, ArraySegment<byte> state)
+        private Vector(VectorStore store, ArraySegment<byte> state)
         {
-            this.n = n;
-            this.combination = combination;
+            this.store = store;
             this.state = state;
         }
-
-        public Combination Combination => combination;
+        public Vector(VectorStore store, uint index) : 
+            this(store, new ArraySegment<byte>(store.Bytes, (int)(index * store.VectorSize), (int)store.VectorSize))
+        {
+            this.index = index;
+        }
+        public Vector(VectorStore store) : this(store, new byte[store.VectorSize])
+        {
+        }
 
         public bool IsRemoved
         {
             get
             {
-                var b = (n - n % 4) / 4;
-                var v = state[b] & 1;
-                return v == 1;
+                return store.IsRemoved(index);
             }
             set
             {
-                var b = (n - n % 4) / 4;
-                state[b] |= 0x01;
+                if (!value) throw new Exception("can't restore");
+                store.Remove(index);
             }
         }
 
-        public int GetValue(int x)
-        {
-            return GetValue(state, x);
-        }
-
-        private static int GetValue(ArraySegment<byte> state, int x)
+        private int GetValue(uint x)
         {
             x -= 1;
             var b = (x - x % 4) / 4;
             var bp = (3 - x % 4) * 2;
-            return (state[b] >> bp) & 3;
+            return (state[(int)b] >> (int)bp) & 3;
         }
 
-        private static void SetValue(ArraySegment<byte> state, int x, int v)
+        /// <summary>
+        /// Set vector variable value
+        /// </summary>
+        /// <param name="state">vector state</param>
+        /// <param name="x">variable index</param>
+        /// <param name="v">value</param>
+        public void SetValue(uint x, int v)
         {
             x -= 1;
-            int b = (x - x % 4) / 4;
-            int bp = (3 - x % 4) * 2;
+            uint b = (x - x % 4) / 4;
+            uint bp = (3 - x % 4) * 2;
 
-            int s0 = 3 << bp;
-            int s1 = (state[b] ^ 0xFF) | s0;
-            int s2 = (s1 & ((v << bp) ^ 0xFF)) ^ 0xFF;
+            int s0 = 3 << (int)bp;
+            int s1 = (state[(int)b] ^ 0xFF) | s0;
+            int s2 = (s1 & ((v << (int)bp) ^ 0xFF)) ^ 0xFF;
 
-            state[b] = (byte)s2;
+            state[(int)b] = (byte)s2;
         }
 
         public bool ExtendTo(Vector v)
         {
             bool changed = false;
-            for (int i = 1; i <= n; i++)
+            for (uint i = 1; i <= store.VariablesCount; i++)
             {
-                var thisValue = GetValue(state, i);
+                var thisValue = GetValue(i);
                 if (thisValue != NotSet) continue;
 
-                var otherValue = GetValue(v.state, i);
+                var otherValue = v.GetValue(i);
                 if (otherValue == NotSet) continue;
 
-                SetValue(state, i, otherValue);
-                changed = true;
-            }
-            return changed;
-        }
-
-        public bool ExtendToGroup(Vector v1, Vector v2)
-        {
-            bool changed = false;
-            for (int i = 1; i <= n; i++)
-            {
-                var thisValue = GetValue(state, i);
-                if (thisValue != NotSet) continue;
-
-                var otherValue1 = GetValue(v1.state, i);
-                if (otherValue1 == NotSet) continue;
-
-                var otherValue2 = GetValue(v2.state, i);
-                if (otherValue2 == NotSet) continue;
-
-                if (otherValue1 != otherValue2) continue;
-
-                SetValue(state, i, otherValue1);
+                SetValue(i, otherValue);
                 changed = true;
             }
             return changed;
@@ -103,56 +87,53 @@ namespace PolySat
 
         public (Vector, int) Group(Vector[] compatible)
         {
-            int gs = n;
+            uint gs = store.VariablesCount;
+            var group = new Vector(store);
 
-            byte[] group = new byte[(n - n % 4) / 4 + 1];
-
-            for (int i = 1; i <= n; i++)
+            for (uint i = 1; i <= store.VariablesCount; i++)
             {
-                SetValue(group, i, NotSet);
+                group.SetValue(i, NotSet);
                 int gvv = NotSet;
                 foreach (var v in compatible)
                 {
-                    int vv = GetValue(v.state, i);
+                    int vv = v.GetValue(i);
                     if (vv == NotSet)
                     {
-                        SetValue(group, i, NotSet);
+                        group.SetValue(i, NotSet);
                         gs--;
                         break;
                     }
                     if (gvv != NotSet && gvv != vv)
                     {
-                        SetValue(group, i, NotSet);
+                        group.SetValue(i, NotSet);
                         gs--;
                         break;
                     }
                     if (gvv == NotSet)
                     {
-                        SetValue(group, i, vv);
+                        group.SetValue(i, vv);
                         gvv = vv;
                     }
                 }
-                int cv = GetValue(state, i);
-                if (cv != NotSet && cv == GetValue(group, i))
+                int cv = GetValue(i);
+                if (cv != NotSet && cv == group.GetValue(i))
                 {
                     gs--;
                 }
             }
-
-
-            return (new Vector(n, combination, group), gs);
+            return (group, (int)gs);
         }
 
         public bool IsCompatible(Vector v)
         {
             bool compatible = true;
-            for (int i = 1; i <= n; i++)
+            for (uint i = 1; i <= store.VariablesCount; i++)
             {
-                var thisValue = GetValue(state, i);
+                var thisValue = GetValue(i);
                 // notset compatible with any other
                 if (thisValue == NotSet) continue;
                 
-                var otherValue = GetValue(v.state, i);
+                var otherValue = v.GetValue(i);
                 if (otherValue == NotSet) continue;
 
                 if (thisValue != otherValue)
@@ -166,8 +147,8 @@ namespace PolySat
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder(n);
-            for (int i = 0; i < n; i++)
+            StringBuilder sb = new StringBuilder((int)store.VariablesCount);
+            for (int i = 0; i < store.VariablesCount; i++)
             {
                 var b = (i - i % 4) / 4;
                 var s = (3 - i % 4) * 2;
@@ -175,6 +156,16 @@ namespace PolySat
             }
             if (IsRemoved) sb.Append("--");
             return sb.ToString();
+        }
+
+        public Vector Clone()
+        {
+            return new Vector(store, state.ToArray());
+        }
+
+        public IEnumerable<Vector> GetCompatible(IEnumerable<Vector> s)
+        {
+            return s.Where(v => IsCompatible(v));
         }
     }
 }
