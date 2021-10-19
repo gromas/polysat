@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace PolySat
@@ -14,9 +15,12 @@ namespace PolySat
         private readonly uint[] vectordata;
         private readonly uint[] vectormask;
         private readonly BitArray removed;
+        private readonly StreamWriter w;
 
-        public VectorStore(int n)
+        public VectorStore(int n, StreamWriter w)
         {
+            this.w = w;
+
             this.n = n;
             // total combinations count
             combinationsCount = n * (n - 1) * (n - 2) / 6;
@@ -47,6 +51,19 @@ namespace PolySat
                     vector.SetBit(ct.Item3, i & 1);
                 }
             }
+        }
+
+        public void WriteAvailableVectors()
+        {
+            w.WriteLine("----------------- list of available vectors START");
+            foreach(var c in Combinations())
+            {
+                foreach(var v in c.GetVectors())
+                {
+                    w.WriteLine($"{v}");
+                }
+            }
+            w.WriteLine("----------------- list of available vectors END");
         }
 
         public Vector this[int index] => 
@@ -123,9 +140,10 @@ namespace PolySat
         public void AddConstraint(int a, int b, int c)
         {
             var x = Utils.SortByAbs(a, b, c);
-            var i = (x[2][1] > 0 ? 1 : 0) + (x[1][1] > 0 ? 2 : 0) + (x[0][1] > 0 ? 4 : 0);
+            var i = (x[2][1] > 0 ? 0 : 1) + (x[1][1] > 0 ? 0 : 2) + (x[0][1] > 0 ? 0 : 4);
             var index = GetIndex(new Tuple<int, int, int>(x[0][0], x[1][0], x[2][0]));
             RemoveVector(index * 8 + i);
+            w.WriteLine($"remove vector {this[index * 8 + i]}");
         }
 
         /// <summary>
@@ -143,21 +161,49 @@ namespace PolySat
             }
         }
 
+        public void AddConstraint(int x0)
+        {
+            
+            var x = new int[] { Math.Abs(x0) };
+
+            for (int x1 = 1; x1 < n; x1++)
+            {
+                if (x1 == x[0]) continue;
+                for (int x2 = x1 + 1; x2 <= n; x2++)
+                {
+                    if (x2 == x[0]) continue;
+
+                    AddConstraint(x0, x1, x2);
+                    AddConstraint(x0, x1, -x2);
+                    AddConstraint(x0, -x1, x2);
+                    AddConstraint(x0, -x1, -x2);
+                }
+            }
+        }
+
         /// <summary>
         /// Massive constraints loading
         /// </summary>
         /// <param name=""></param>
         public void AddConstraints(IEnumerable<int[]> literalset)
         {
+            
             foreach (var ls in literalset)
             {
                 if (ls.Length == 3)
                 {
+                    w.WriteLine($"CNF constraint {ls[0]} {ls[1]} {ls[2]}");
                     AddConstraint(ls[0], ls[1], ls[2]);
                 }
                 else if (ls.Length == 2)
                 {
+                    w.WriteLine($"CNF constraint {ls[0]} {ls[1]}");
                     AddConstraint(ls[0], ls[1]);
+                }
+                else if (ls.Length == 1)
+                {
+                    w.WriteLine($"CNF constraint {ls[0]}");
+                    AddConstraint(ls[0]);
                 }
                 else
                     throw new Exception("literal count must be 2 or 3");

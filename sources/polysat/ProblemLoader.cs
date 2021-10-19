@@ -55,7 +55,7 @@ namespace PolySat
                     {
                         var literals = line.Trim().Split(" ").Select(value => int.Parse(value)).ToArray();
 
-                        if (literals.Length != 2 && literals.Length != 3)
+                        if (literals.Length < 1 || literals.Length > 3)
                         {
                             throw new Exception("literals count");
                         }
