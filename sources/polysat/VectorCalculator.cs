@@ -26,10 +26,8 @@ namespace PolySat
 
                     foreach (var vector in vectors)
                     {
-                        foreach (var cc in store.Combinations(vector))
+                        foreach (var cc in store.Combinations(/*vector*/))
                         {
-                            if (cc.Equals(c)) continue;
-
                             var compatible = cc.GetCompatible(vector).ToArray();
 
                             switch (compatible.Length)
@@ -45,14 +43,11 @@ namespace PolySat
                                     changed |= ext;
                                     break;
                                 default:
-                                    //if (vectors.Length > depth)
+                                    var (group, gc) = vector.Group(compatible);
+                                    if (gc != 0)
                                     {
-                                        var (group, gc) = vector.Group(compatible);
-                                        if (gc != 0)
-                                        {
-                                            var extg = vector.ExtendTo(group);
-                                            changed |= extg;
-                                        }
+                                        var extg = vector.ExtendTo(group);
+                                        changed |= extg;
                                     }
                                     break;
                             }
