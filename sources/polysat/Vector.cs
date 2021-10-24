@@ -1,69 +1,47 @@
 ﻿using System;
-using System.Text;
 
 namespace PolySat
 {
     public class Vector
     {
-        private readonly VectorStore store;
-        private readonly int index;
-        private readonly ArraySegment<uint> data;
-        private readonly ArraySegment<uint> mask;
-        public Vector(VectorStore store, int index, ArraySegment<uint> data, ArraySegment<uint> mask)
+        private readonly ArraySegment<uint> vectorData;
+        private readonly ArraySegment<uint> vectorMask;
+        private readonly (int x0, int x1, int x2, byte vindex) index;
+        public Vector(int n, (int x0, int x1, int x2, byte vindex) index)
         {
-            this.store = store;
             this.index = index;
-            this.data = data;
-            this.mask = mask;
+            var vectorSize = (n - 1 - (n - 1) % 32) / 32 + 1;
+            vectorData = new uint[vectorSize];
+            vectorMask = new uint[vectorSize];
+
+            SetBit(index.x0, (index.vindex >> 2) & 1);
+            SetBit(index.x1, (index.vindex >> 1) & 1);
+            SetBit(index.x2, index.vindex & 1);
         }
 
-        public void SetBit(int x, int value)
+        private void SetBit(int x, int value)
         {
             int shift = (x - 1) % 32;
             var index = (x - 1 - shift) / 32;
-            mask[index] |= (uint)(1 << shift);
-            data[index] |= (uint)(value << shift);
+            vectorMask[index] |= (uint)(1 << shift);
+            vectorData[index] |= (uint)(value << shift);
         }
 
-        public (Vector, int) Group(Vector[] vectors)
+        // group vector
+        private Vector(ArraySegment<uint> vectorData, ArraySegment<uint> vectorMask)
         {
-            int gs = 0;
-            uint[] groupmask = new uint[mask.Count];
-            uint[] groupdata = new uint[mask.Count];
-            // create group vector outside store
-            for (int i = 0; i < mask.Count; i++)
-            {
-                // считаем маску группы
-                groupdata[i] = 0;
-                groupmask[i] = ~mask[i];
-                foreach (var v in vectors)
-                {
-                    // считаем текущую маску группы
-                    groupmask[i] &= v.mask[i];
-                    // сбрасываем ранее установленные биты, если маска совместимости уменьшилась
-                    groupdata[i] &= groupmask[i];
-                    // считаем несовместимые биты
-                    uint uncomp = groupdata[i] ^ (v.data[i] & groupmask[i]);
-                    // убираем маску по несовместимым битам
-                    groupmask[i] &= ~uncomp;
-                    groupdata[i] &= groupmask[i];
-                }
-                if (groupmask[i] > 0) gs++;
-            }
-            
-            var group = new Vector(store, -1, groupdata, groupmask);
-
-            return (group, gs);
+            this.vectorData = vectorData;
+            this.vectorMask = vectorMask;
         }
 
         public bool IsCompatible(Vector v)
         {
-            for (int i = 0; i < mask.Count; i++)
+            for (int i = 0; i < vectorMask.Count; i++)
             {
                 // проверяем соответствие битов, установленных в обоих векторах
-                uint groupmask = mask[i] & v.mask[i];
+                uint groupmask = vectorMask[i] & v.vectorMask[i];
                 if (groupmask == 0) continue;
-                if ((data[i] & groupmask) != (v.data[i] & groupmask)) return false;
+                if ((vectorData[i] & groupmask) != (v.vectorData[i] & groupmask)) return false;
             }
             return true;
         }
@@ -71,33 +49,49 @@ namespace PolySat
         public bool ExtendTo(Vector v)
         {
             bool changed = false;
-            for (int i = 0; i < mask.Count; i++)
+            for (int i = 0; i < vectorMask.Count; i++)
             {
-                uint d = data[i];
-                uint m = mask[i];
-                uint groupmask = ~mask[i] & v.mask[i];
-                data[i] |= v.data[i] & groupmask;
-                mask[i] |= groupmask;
-                changed |= d != data[i] || m != mask[i];
+                uint d = vectorData[i];
+                uint m = vectorMask[i];
+                uint groupmask = ~vectorMask[i] & v.vectorMask[i];
+                vectorData[i] |= v.vectorData[i] & groupmask;
+                vectorMask[i] |= groupmask;
+                changed |= d != vectorData[i] || m != vectorMask[i];
             }
             return changed;
         }
 
-        public bool Removed => store.VectorRemoved(index);
-        public void Remove() => store.RemoveVector(index);
-
-        public override string ToString()
+        public (Vector, int) Group(Vector[] vectors)
         {
-            StringBuilder sb = new StringBuilder(store.VariablesCount);
-            for (int i = 0; i < store.VariablesCount; i++)
+            int gs = 0;
+            uint[] groupmask = new uint[vectorMask.Count];
+            uint[] groupdata = new uint[vectorMask.Count];
+            // create group vector outside store
+            for (int i = 0; i < vectorMask.Count; i++)
             {
-                int shift = i % 32;
-                var index = (i - shift) / 32;
-                sb.Append(((mask[index] >> shift) & 1) == 0 ? "x" : ((data[index] >> shift) & 1) == 1 ? "1" : "0");
+                // считаем маску группы
+                groupdata[i] = 0;
+                groupmask[i] = ~vectorMask[i];
+                foreach (var v in vectors)
+                {
+                    // считаем текущую маску группы
+                    groupmask[i] &= v.vectorMask[i];
+                    // сбрасываем ранее установленные биты, если маска совместимости уменьшилась
+                    groupdata[i] &= groupmask[i];
+                    // считаем несовместимые биты
+                    uint uncomp = groupdata[i] ^ (v.vectorData[i] & groupmask[i]);
+                    // убираем маску по несовместимым битам
+                    groupmask[i] &= ~uncomp;
+                    groupdata[i] &= groupmask[i];
+                }
+                if (groupmask[i] > 0) gs++;
             }
-            return sb.ToString();
+
+            var group = new Vector(groupdata, groupmask);
+
+            return (group, gs);
         }
 
-        public int Index => index;
+        public byte Index => index.vindex;
     }
 }

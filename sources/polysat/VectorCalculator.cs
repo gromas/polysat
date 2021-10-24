@@ -17,7 +17,7 @@ namespace PolySat
             {
                 changed = false;
 
-                foreach (var c in store.Combinations())
+                foreach (var c in store.GetCombinations())
                 {
                     bool removed = false;
 
@@ -26,7 +26,7 @@ namespace PolySat
 
                     foreach (var vector in vectors)
                     {
-                        foreach (var cc in store.Combinations(/*vector*/))
+                        foreach (var cc in store.GetCombinations())
                         {
                             var compatible = cc.GetCompatible(vector).ToArray();
 
@@ -34,7 +34,7 @@ namespace PolySat
                             {
                                 case 0:
                                     if (vectors.Length == 1) return false;
-                                    vector.Remove();
+                                    c.Remove(vector);
                                     changed = true;
                                     removed = true;
                                     break;
@@ -56,7 +56,8 @@ namespace PolySat
                         if (removed) break;
                     }
                 }
-            } while (changed);
+            } 
+            while (changed);
 
             return true;
         }
