@@ -19,7 +19,7 @@ namespace PolySat
 
                 foreach (var c in store.GetCombinations())
                 {
-                    bool removed = false;
+                    removed:
 
                     var vectors = c.GetVectors().ToArray();
                     if (vectors.Length == 0) return false;
@@ -28,6 +28,8 @@ namespace PolySat
                     {
                         foreach (var cc in store.GetCombinations())
                         {
+                            if (c.Index == cc.Index) continue;
+
                             var compatible = cc.GetCompatible(vector).ToArray();
 
                             switch (compatible.Length)
@@ -36,24 +38,16 @@ namespace PolySat
                                     if (vectors.Length == 1) return false;
                                     c.Remove(vector);
                                     changed = true;
-                                    removed = true;
-                                    break;
-                                case 1:
-                                    var ext = vector.ExtendTo(compatible[0]);
-                                    changed |= ext;
-                                    break;
+                                    goto removed;
                                 default:
-                                    var (group, gc) = vector.Group(compatible);
+                                    (Vector group, int gc) = vector.Group(compatible);
                                     if (gc != 0)
                                     {
-                                        var extg = vector.ExtendTo(group);
-                                        changed |= extg;
+                                        changed |= vector.ExtendTo(group);
                                     }
                                     break;
                             }
-                            if (removed) break;
                         }
-                        if (removed) break;
                     }
                 }
             } 
