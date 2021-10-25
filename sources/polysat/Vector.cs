@@ -23,12 +23,28 @@ namespace PolySat
             SetBit(index.x2, index.vindex & 1);
         }
 
-        private void SetBit(int x, int value)
+        public Vector(int n, int x, int v)
+        {
+            this.n = n;
+            vectorSize = (n - 1 - (n - 1) % 64) / 64 + 1;
+            vectorData = new ulong[vectorSize];
+            vectorMask = new ulong[vectorSize];
+            SetBit(x, v);
+        }
+
+        public void SetBit(int x, int value)
         {
             int shift = (x - 1) % 64;
             var index = (x - 1 - shift) / 64;
             vectorMask[index] |= (ulong)1 << shift;
             vectorData[index] |= (ulong)value << shift;
+        }
+
+        public int GetBit(int x)
+        {
+            int shift = (x - 1) % 64;
+            var index = (x - 1 - shift) / 64;
+            return (int)((vectorData[index] >> shift) & 1);
         }
 
         // group vector
@@ -109,6 +125,6 @@ namespace PolySat
             return sb.ToString();
         }
 
-        public byte Index => index.vindex;
+        public (int x0, int x1, int x2, byte vindex) Index => index;
     }
 }

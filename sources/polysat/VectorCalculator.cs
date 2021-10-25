@@ -55,5 +55,33 @@ namespace PolySat
 
             return true;
         }
+
+        /// <summary>
+        /// Fictional variable test
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public bool IsFictional(int x)
+        {
+            // гипотеза: условием независимости переменной от значений двух других
+            // переменных сочетания считаем наличие совпадающей пары назначений x1 и x2
+            // для назначений x0 = 1 и x0 = 0 одновременно. Соответственно, если существует
+            // назначение, противоречащее нашему утверждению - переменная возможно не является фиктивной
+            // TODO: проверить влияние других назначений переменных в векторах на правильность утверждения
+
+            bool fictional = true;
+
+            Vector mask1 = new Vector(store.VariableCount, x, 1);
+            Vector mask0 = new Vector(store.VariableCount, x, 0);
+
+            foreach (var c in store.GetCombinations().Where(c=>c.Index.x0 == x || c.Index.x1 == x || c.Index.x2 == x))
+            {
+                var xx = new int[] { c.Index.x0, c.Index.x1, c.Index.x2 }.Except(new int[] { x }).ToArray();
+                fictional &= !c.GetVectors()
+                    .GroupBy(g => (g.GetBit(xx[0]), g.GetBit(xx[1])))
+                    .Where(g => g.Count() != 2).Any();
+            }
+            return fictional;
+        }
     }
 }

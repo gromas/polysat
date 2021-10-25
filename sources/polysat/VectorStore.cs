@@ -6,6 +6,7 @@ namespace PolySat
     public class VectorStore
     {
         private readonly int n;
+
         private readonly Dictionary<(int x0, int x1, int x2), Combination> combinations;
         public VectorStore(int n)
         {
@@ -38,5 +39,8 @@ namespace PolySat
                 AddConstraint((constraint[0], constraint[1], constraint[2]));
             }
         }
+
+        public int VariableCount => n;
+        public int VectorSize => (n - 1 - (n - 1) % 64) / 64 + 1;
     }
 }

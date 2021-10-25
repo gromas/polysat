@@ -25,7 +25,7 @@ namespace PolySat
 
         public void Remove(Vector vector)
         {
-            vectors.Remove(vector.Index);
+            vectors.Remove(vector.Index.vindex);
         }
 
         public void Remove(byte vindex)
