@@ -12,7 +12,7 @@ namespace PolySat
         private readonly (int x0, int x1, int x2, byte vindex) index;
 
         public Vector(VectorStore store, (int x0, int x1, int x2, byte vindex) index) :
-            this(store, index, new ulong[store.VectorSize], new ulong[store.VectorSize])
+            this(store, index, new ulong[store.VectorSize], new ulong[store.VectorSize], false)
         {
             Initialize();
         }
@@ -34,12 +34,13 @@ namespace PolySat
             SetBit(x, v);
         }
 
-        private Vector(VectorStore store, (int x0, int x1, int x2, byte vindex) index, ulong[] vectorData, ulong[] vectorMask)
+        private Vector(VectorStore store, (int x0, int x1, int x2, byte vindex) index, ulong[] vectorData, ulong[] vectorMask, bool removed)
         {
             this.store = store;
             this.index = index;
             this.vectorData = vectorData;
             this.vectorMask = vectorMask;
+            this.removed = removed;
         }
 
         private Vector(VectorStore store, ArraySegment<ulong> vectorData, ArraySegment<ulong> vectorMask)
@@ -152,6 +153,11 @@ namespace PolySat
         {
             removed = false;
             Initialize();
+        }
+
+        public Vector Snapshot(VectorStore store)
+        {
+            return new Vector(store, index, vectorData.ToArray(), vectorMask.ToArray(), removed);
         }
     }
 }

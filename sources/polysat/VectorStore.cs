@@ -21,6 +21,18 @@ namespace PolySat
             combinations = new Dictionary<(int x0, int x1, int x2), Combination>();
         }
 
+        public Combination GetCombination((int x0, int x1, int x2) index)
+        {
+            return combinations[index];
+        }
+
+        private VectorStore(int n, int vectorSize, Dictionary<(int x0, int x1, int x2), Combination> combinations)
+        {
+            this.n = n;
+            this.vectorSize = vectorSize;
+            this.combinations = combinations.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Snapshot(this));
+        }
+
         public void AddConstraint((int x0, int x1, int x2) constraint)
         {
             var x = Utils.SortByAbs(constraint.x0, constraint.x1, constraint.x2);
@@ -47,6 +59,7 @@ namespace PolySat
             removed.Push(r);
             version++;
         }
+
         public void Restore(int version)
         {
             for (; this.version > version; this.version--)
@@ -69,5 +82,10 @@ namespace PolySat
         public int Version => version;
         public int VectorSize => vectorSize;
         public IEnumerable<Combination> Combinations => combinations.Values.Where(c => !c.IsRemoved);
+
+        public VectorStore Snapshot()
+        {
+            return new VectorStore(n, vectorSize, combinations);
+        }
     }
 }

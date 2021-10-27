@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PolySat
@@ -19,6 +20,14 @@ namespace PolySat
             {
                 vectors.Add(i, new Vector(store, (index.x0, index.x1, index.x2, i)));
             }
+        }
+
+        private Combination(VectorStore store, (int x0, int x1, int x2) index, Dictionary<byte, Vector> vectors, bool removed)
+        {
+            this.store = store;
+            this.index = index;
+            this.removed = removed;
+            this.vectors = vectors.ToDictionary(kvp=> kvp.Key, kvp => kvp.Value.Snapshot(store));
         }
 
         public IEnumerable<Vector> Vectors => vectors.Values.Where(v => !v.IsRemoved);
@@ -50,6 +59,16 @@ namespace PolySat
         void IRemovable.Restore()
         {
             removed = false;
+        }
+
+        public Combination Snapshot(VectorStore store)
+        {
+            return new Combination(store, index, vectors, removed);
+        }
+
+        public Vector GetVector((int x0, int x1, int x2, byte vindex) index)
+        {
+            return vectors[index.vindex];
         }
     }
 }
