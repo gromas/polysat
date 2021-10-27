@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace PolySat
 {
@@ -8,9 +9,9 @@ namespace PolySat
         static void Main(string[] args)
         {
             //string path = @"..\..\..\..\..\samples\Circular logical deadlock"; // SAT/UNSAT
-            string path = @"..\..\..\..\..\samples\uf20-91";// ALL SATISFABLE
+            //string path = @"..\..\..\..\..\samples\uf20-91";// ALL SATISFABLE
             //string path = @"..\..\..\..\..\samples\uuf50-218\UUF50.218.1000";// ALL UNSATISFABLE
-            //string path = @"..\..\..\..\..\samples\test";
+            string path = @"..\..\..\..\..\samples\test";
             //string path = @"..\..\..\..\..\samples\uf50-218";// ALL SATISFABLE
             //string path = @"..\..\..\..\..\samples\uf100-430";// ALL SATISFABLE
             //string path = @"..\..\..\..\..\samples\flat30-60";// ALL SATISFABLE
@@ -28,8 +29,12 @@ namespace PolySat
         static void Run(string path)
         {
             var problem = ProblemLoader.Load(path);
-            foreach(var p in problem)
+            foreach (var p in problem)
             {
+                Console.WriteLine();
+                Console.WriteLine("--------------------------------------------------------------------------------------------------");
+                Console.WriteLine();
+
                 using var w = new StreamWriter($"{path}.out", false);
                 int varCount = p.VariableCount;
                 var store = new VectorStore(varCount);
@@ -38,28 +43,58 @@ namespace PolySat
 
                 Console.WriteLine($"{ DateTime.Now} Loaded problem file {path}");
 
-                var calculator = new VectorCalculator(store);
+                // explore problem for pure dummy variables before calculation
+                var dex = new DummyVariablesExplorer(store);
+                Console.WriteLine($"{DateTime.Now} Search for dummy variables.");
+                foreach (var d in dex.GetPureDummyVariablesAndCollapse())
+                {
+                    Console.WriteLine($"var {d} is dummy variable");
+                }
+                // if all variables is dummy then UNSAT
+                if (dex.Unsatisfable)
+                {
+                    Console.WriteLine($"{DateTime.Now} Problem file {path}. Resolution: UNSAT");
+                    continue;
+                }
 
+                Console.WriteLine($"{DateTime.Now} Check for linear satisfability.");
+
+                var calculator = new VectorCalculator(store);
                 var satisfable = calculator.IsSatisfable();
 
                 w.Flush();
 
-                if (satisfable)
+                if (!satisfable)
                 {
-                    for(int i = 1; i<= varCount; i++)
-                    {
-                        if (calculator.IsFictional(i))
-                        {
-                            Console.WriteLine($"var {i} is fictional");
-                        }
-                    }
+                    Console.WriteLine($"{DateTime.Now} Problem file {path}. Resolution: UNSAT");
+                    continue;
+                }
 
-                    Console.WriteLine($"{DateTime.Now} SAT");
-                }
-                else
+                Console.WriteLine($"{DateTime.Now} may be satisfable. Search for evaluated dummy variables.");
+
+                // explore problem for pure dummy variables after calculation
+                foreach (var d in dex.GetPureDummyVariablesAndCollapse())
                 {
-                    Console.WriteLine($"{DateTime.Now} UNSAT");
+                    Console.WriteLine($"var {d} is evaluated to dummy variable");
                 }
+
+                // if all variables is dummy then UNSAT
+                if (dex.Unsatisfable)
+                {
+                    Console.WriteLine($"{DateTime.Now} Problem file {path}. Resolution: UNSAT");
+                    continue;
+                }
+
+                Console.WriteLine($"{DateTime.Now} may be satisfable. Run deep search.");
+
+                if (!dex.DeepSearch())
+                {
+                    Console.WriteLine($"{DateTime.Now} Problem file {path}. Resolution: UNSATisfable");
+                    continue;
+                }
+
+                Console.WriteLine($"{DateTime.Now} Problem file {path}. Resolution: SATisfable");
+                continue;
             }
         }
     }
