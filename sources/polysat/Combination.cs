@@ -3,46 +3,53 @@ using System.Linq;
 
 namespace PolySat
 {
-    public class Combination
+    public class Combination : IRemovable
     {
+        private bool removed;
+        private readonly VectorStore store;
         private readonly (int x0, int x1, int x2) index;
         private readonly Dictionary<byte, Vector> vectors;
 
-        public Combination(int n, (int x0, int x1, int x2) index)
+        public Combination(VectorStore store, (int x0, int x1, int x2) index)
         {
+            this.store = store;
             this.index = index;
             vectors = new Dictionary<byte, Vector>();
             for (byte i = 0; i < 8; i++)
             {
-                vectors.Add(i, new Vector(n, (index.x0, index.x1, index.x2, i)));
+                vectors.Add(i, new Vector(store, (index.x0, index.x1, index.x2, i)));
             }
         }
 
-        public IEnumerable<Vector> GetVectors()
-        {
-            return vectors.Values;
-        }
-
-        public void Remove(Vector vector)
-        {
-            vectors.Remove(vector.Index);
-        }
+        public IEnumerable<Vector> Vectors => vectors.Values.Where(v => !v.IsRemoved);
 
         public void Remove(byte vindex)
         {
-            vectors.Remove(vindex);
+            vectors[vindex].Remove();
+        }
+
+        public void Remove()
+        {
+            removed = true;
+            store.Save(this);
         }
 
         public IEnumerable<Vector> GetCompatible(Vector vector)
         {
-            return vectors.Values.Where(v => vector.IsCompatible(v));
-        }
-
-        public bool IsVectorRemoved(byte index)
-        {
-            return !vectors.ContainsKey(index);
+            return Vectors.Where(v => vector.IsCompatible(v));
         }
 
         public (int x0, int x1, int x2) Index => index;
+        /// <summary>
+        /// Combination removed is current version
+        /// </summary>
+        /// <param name="version"></param>
+        /// <returns></returns>
+        public bool IsRemoved => removed;
+
+        void IRemovable.Restore()
+        {
+            removed = false;
+        }
     }
 }

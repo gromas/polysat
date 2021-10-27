@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace PolySat
 {
@@ -12,21 +13,23 @@ namespace PolySat
 
         public bool IsSatisfable()
         {
+            store.Cleanup();
+
             bool changed;
             do
             {
                 changed = false;
 
-                foreach (var c in store.GetCombinations())
+                foreach (var c in store.Combinations)
                 {
-                    removed:
+                removed:
 
-                    var vectors = c.GetVectors().ToArray();
+                    var vectors = c.Vectors.ToArray();
                     if (vectors.Length == 0) return false;
 
                     foreach (var vector in vectors)
                     {
-                        foreach (var cc in store.GetCombinations())
+                        foreach (var cc in store.Combinations)
                         {
                             if (c.Index == cc.Index) continue;
 
@@ -36,7 +39,7 @@ namespace PolySat
                             {
                                 case 0:
                                     if (vectors.Length == 1) return false;
-                                    c.Remove(vector);
+                                    vector.Remove();
                                     changed = true;
                                     goto removed;
                                 default:
@@ -50,7 +53,7 @@ namespace PolySat
                         }
                     }
                 }
-            } 
+            }
             while (changed);
 
             return true;
