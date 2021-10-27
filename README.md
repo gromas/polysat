@@ -6,8 +6,8 @@ No more questions about P=NP.
 
 Now any 3-SAT problem can be solved with O(m) of space and up to O(n¹⁰) of time.
 
-YouTube video (Russian language only)
-https://youtu.be/hp9nAqIaRx4
+YouTube videos (Russian language only)
+https://youtube.com/playlist?list=PL3zMrCuJ2sXHWPvwTlUCxUbGhDHX_4V5G
 
 PowerPoint presentation (Russian language only) docs/polysat.pptx
 
