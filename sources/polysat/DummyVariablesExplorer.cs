@@ -100,14 +100,13 @@ namespace PolySat
                     // проверим каждый вектор ess на выполнимость
                     foreach (var c in combinations)
                     {
-                        var (dmy, ess) = Split(c, x);
+                        // Приведу в соответствие с последним видео
+                        var vectors = c.Vectors.ToArray();
 
-                        if (dmy.Length == 0 && ess.Length == 0) return false;
-
-                        foreach(var v in ess)
+                        foreach (var v in vectors)
                         {
                             var version = store.Version;
-                            foreach (var tbd in ess.Concat(dmy))
+                            foreach (var tbd in vectors)
                             {
                                 if (tbd.Index == v.Index) continue;
                                 tbd.Remove();
