@@ -4,7 +4,7 @@
 
 No more questions about P=NP.
 
-Now any 3-SAT problem can be solved with O(m) of space and up to O(n¹⁰) of time.
+Now any 3-SAT problem can be solved with O(m\*n) of space and up to O(n¹⁰) of time.
 
 YouTube videos (Russian language only)
 https://youtube.com/playlist?list=PL3zMrCuJ2sXHWPvwTlUCxUbGhDHX_4V5G
