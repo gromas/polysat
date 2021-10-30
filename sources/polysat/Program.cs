@@ -11,11 +11,11 @@ namespace PolySat
             //string path = @"..\..\..\..\..\samples\Circular logical deadlock"; // SAT/UNSAT
             //string path = @"..\..\..\..\..\samples\uf20-91";// ALL SATISFABLE
             //string path = @"..\..\..\..\..\samples\uuf50-218\UUF50.218.1000";// ALL UNSATISFABLE
-            //string path = @"..\..\..\..\..\samples\test";
+            string path = @"..\..\..\..\..\samples\test";
             //string path = @"..\..\..\..\..\samples\uf50-218";// ALL SATISFABLE
             //string path = @"..\..\..\..\..\samples\uf100-430";// ALL SATISFABLE
             //string path = @"..\..\..\..\..\samples\flat30-60";// ALL SATISFABLE
-            string path = @"..\..\..\..\..\samples\UUF250.1065.100";// ALL UNSATISFABLE
+            //string path = @"..\..\..\..\..\samples\UUF250.1065.100";// ALL UNSATISFABLE
             //string path = @"..\..\..\..\..\samples\RTI_k3_n100_m429";
 
             foreach (var f in Directory.GetFiles(path, "*.cnf"))
