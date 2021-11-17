@@ -15,16 +15,16 @@ namespace PolySat
         private readonly int n;
         public readonly Combination c;
         public readonly byte vIndex;
-        private readonly ArraySegment<ulong> data;
-        private readonly ArraySegment<ulong> mask;
+        private readonly ArraySegment<ulong> bitSet0;
+        private readonly ArraySegment<ulong> bitSet1;
 
-        internal Vector(int n, Combination c, byte vIndex, ArraySegment<ulong> data, ArraySegment<ulong> mask)
+        internal Vector(int n, Combination c, byte vIndex, ArraySegment<ulong> bitSet0, ArraySegment<ulong> bitSet1)
         {
             this.n = n;
             this.c = c;
             this.vIndex = vIndex;
-            this.data = data;
-            this.mask = mask;
+            this.bitSet0 = bitSet0;
+            this.bitSet1 = bitSet1;
         }
         /// <summary>
         /// Назначает переменной x значение value
@@ -35,8 +35,15 @@ namespace PolySat
         {
             int shift = (x - 1) % 64;
             var index = (x - 1 - shift) / 64;
-            mask[index] |= (ulong)1 << shift;
-            data[index] |= (ulong)value << shift;
+            switch (value)
+            {
+                case 0:
+                    bitSet0[index] |= (ulong)1 << shift;
+                    break;
+                case 1:
+                    bitSet1[index] |= (ulong)1 << shift;
+                    break;
+            }
         }
 
         public IEnumerable<Vector> GetCompatible(IEnumerable<Vector> vs)
@@ -46,68 +53,71 @@ namespace PolySat
 
         public bool IsCompatible(Vector v)
         {
-            for (int i = 0; i < mask.Count; i++)
+            for (int i = 0; i < bitSet0.Count; i++)
             {
-                // проверяем соответствие битов, установленных в обоих векторах
-                ulong groupmask = mask[i] & v.mask[i];
-                if (groupmask == 0) continue;
-                if (((data[i] & groupmask) ^ (v.data[i] & groupmask)) > 0) return false;
+                if ((bitSet0[i] & v.bitSet1[i]) > 0) return false;
+                if ((bitSet1[i] & v.bitSet0[i]) > 0) return false;
             }
             return true;
         }
 
-        public (Vector group, int changesCount) Group(IEnumerable<Vector> vectors)
+        public static (int n, Combination c, ulong[] bitSet0, ulong[] bitSet1) Aggregate((int n, Combination c, ulong[] bitSet0, ulong[] bitSet1) acc, Vector outer)
         {
-            int gs = 0;
-            ulong[] groupmask = new ulong[mask.Count];
-            ulong[] groupdata = new ulong[mask.Count];
-            for (int i = 0; i < mask.Count; i++)
+            if (acc.n == 0)
             {
-                ulong mask = ~this.mask[i];
-                ulong d0 = 0;
-                ulong d1 = ~d0;
-                foreach (var v in vectors)
-                {
-                    mask &= v.mask[i];
-                    d0 |= v.data[i];
-                    d1 &= v.data[i];
-                }
-                groupmask[i] = mask & ~(d0 ^ d1);
-                groupdata[i] = d0 & mask;
-
-                if (groupmask[i] > 0) gs++;
+                acc.n = outer.n;
+                acc.bitSet0 = new ulong[outer.bitSet0.Count];
+                acc.bitSet1 = new ulong[outer.bitSet1.Count];
+                acc.c = outer.c;
+                outer.bitSet0.AsSpan().CopyTo(acc.bitSet0.AsSpan());
+                outer.bitSet1.AsSpan().CopyTo(acc.bitSet1.AsSpan());
+                return acc;
             }
-            var group = new Vector(n, c, 0xff, groupdata, groupmask);
-            return (group, gs);
+            for (int i = 0; i < acc.bitSet0.Length; i++)
+            {
+                acc.bitSet0[i] &= outer.bitSet0[i];
+                acc.bitSet1[i] &= outer.bitSet1[i];
+            }
+            return acc;
+        }
+
+        public static Vector Group(IEnumerable<Vector> source)
+        {
+            var vector = source.Aggregate<Vector, (int n, Combination c, ulong[] bitSet0, ulong[] bitSet1), Vector>
+                ((0, new Combination { }, null, null), Aggregate, acc => new Vector(acc.n, acc.c, 255, acc.bitSet0, acc.bitSet1));
+            return vector;
         }
 
         public bool Apply(Vector v)
         {
-            bool changed = false;
-            for (int i = 0; i < mask.Count; i++)
+            for (int i = 0; i < bitSet0.Count; i++)
             {
-                ulong d = data[i];
-                ulong m = mask[i];
-                ulong groupmask = ~mask[i] & v.mask[i];
-                data[i] |= v.data[i] & groupmask;
-                mask[i] |= groupmask;
-                changed |= d != data[i] || m != mask[i];
+                if (((bitSet0[i] | v.bitSet0[i]) ^ bitSet0[i] ^ (bitSet1[i] | v.bitSet1[i]) ^ bitSet1[i]) != 0)
+                {
+                    for (; i < bitSet0.Count; i++)
+                    {
+                        bitSet0[i] |= v.bitSet0[i];
+                        bitSet1[i] |= v.bitSet1[i];
+                    }
+                    return true;
+                }
             }
-            return changed;
+            return false;
         }
 
         internal VectorSnapshot Snapshot()
         {
-            return new VectorSnapshot(data, mask);
+            return new VectorSnapshot(bitSet0, bitSet1);
         }
 
         internal bool Restore(VectorSnapshot snapshot)
         {
-            bool changed = !snapshot.mask.AsSpan().SequenceEqual(mask.AsSpan());
+            bool changed = !snapshot.bitSet0.AsSpan().SequenceEqual(bitSet0.AsSpan()) ||
+                           !snapshot.bitSet1.AsSpan().SequenceEqual(bitSet1.AsSpan());
             if (changed)
             {
-                snapshot.data.AsSpan().CopyTo(data.AsSpan());
-                snapshot.mask.AsSpan().CopyTo(mask.AsSpan());
+                snapshot.bitSet0.AsSpan().CopyTo(bitSet0.AsSpan());
+                snapshot.bitSet1.AsSpan().CopyTo(bitSet1.AsSpan());
             }
             return changed;
         }
@@ -119,7 +129,7 @@ namespace PolySat
             {
                 int shift = i % 64;
                 var index = (i - shift) / 64;
-                sb.Append(((mask[index] >> shift) & 1) == 0 ? "x" : ((data[index] >> shift) & 1) == 1 ? "1" : "0");
+                sb.Append(((bitSet0[index] >> shift) & 1) == 1 ? "0" : ((bitSet1[index] >> shift) & 1) == 1 ? "1" : "x");
             }
             return sb.ToString();
         }

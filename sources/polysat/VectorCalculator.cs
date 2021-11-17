@@ -111,8 +111,8 @@ namespace PolySat
                                     changed = true;
                                     goto removed;
                                 default:
-                                    (Vector group, int gc) = vector.Group(compatible);
-                                    changed |= gc != 0 && vector.Apply(group);
+                                    Vector group = Vector.Group(compatible);
+                                    changed |= vector.Apply(group);
                                     break;
                             }
                         }
