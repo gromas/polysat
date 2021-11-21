@@ -1,9 +1,9 @@
-﻿using PolySat.Solver;
+﻿using Polysat.Solver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PolySat
+namespace Polysat
 {
     public class VectorCalculator
     {

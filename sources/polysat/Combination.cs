@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PolySat
+namespace Polysat
 {
     /// <summary>
     /// Представляет сочетание по трём переменным

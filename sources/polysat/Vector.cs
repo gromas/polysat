@@ -1,11 +1,11 @@
-﻿using PolySat.Solver;
+﻿using Polysat.Solver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PolySat
+namespace Polysat
 {
     /// <summary>
     /// Вектор назначения цепочки сочетаний

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PolySat
+namespace Polysat
 {
     internal static class Utils
     {

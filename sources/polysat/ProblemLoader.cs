@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace PolySat
+namespace Polysat
 {
     /// <summary>
     /// Loads CNF into new CombinationSet

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace PolySat
+namespace Polysat
 {
     class Program
     {

@@ -3,8 +3,9 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>PolySat</RootNamespace>
+    <RootNamespace>Polysat</RootNamespace>
     <SignAssembly>false</SignAssembly>
+    <AssemblyName>Polysat</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -20,6 +21,10 @@
 
   <ItemGroup>
     <Compile Remove="ProblemCalculator2.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Polysat.Kernel\Polysat.Kernel.csproj" />
   </ItemGroup>
 
 </Project>

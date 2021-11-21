@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PolySat
+namespace Polysat
 {
     public class VectorStore
     {
