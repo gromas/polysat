@@ -5,7 +5,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Polysat</RootNamespace>
     <SignAssembly>false</SignAssembly>
-    <AssemblyName>Polysat</AssemblyName>
+    <AssemblyName>Polysat.Console</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

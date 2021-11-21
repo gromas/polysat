@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PolySat.KernelBuilder;
+using System.Collections.Generic;
 
 namespace Polysat
 {
@@ -6,10 +7,12 @@ namespace Polysat
     {
         internal readonly int n;
         internal readonly IDictionary<Combination, byte> functions;
+        private readonly IDictionary<Combination, IEnumerable<Constituent>> constituent;
         public VectorStore(int n)
         {
             this.n = n;
             functions = new Dictionary<Combination, byte>();
+            constituent = new Dictionary<Combination, IEnumerable<Constituent>>();
         }
 
         public void AddConstraint((int x0, int x1, int x2) constraint)
