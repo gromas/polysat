@@ -11,7 +11,7 @@ namespace Polysat.KernelBuilder.Tests
         [TestMethod]
         public void BuildDNF()
         {
-            // 4-SAT CNF
+            // 4-SAT CNF SATinsfable
             var constSet = new Constituent[]
             {
                 new (new Constituent( new [] { -1, -2, 3, 4 })),
@@ -37,8 +37,32 @@ namespace Polysat.KernelBuilder.Tests
 
             // check results
             Assert.IsNotNull(kernel, "kernel is null");
+            // implicants count must be equal to expected
             Assert.AreEqual(kernel.Count, expected.Count, "count invalid");
+            // implicants must be equal to expected
+            // WARNING: SetEquals is literals order sensitive
             Assert.IsTrue(kernel.SetEquals(expected), "output not expected");
+        }
+
+        [TestMethod]
+        public void BuildUnsatDNF()
+        {
+            // 3-SAT CNF UNSATisfable
+            var constSet = new Constituent[]
+            {
+                new (new Constituent( new [] { 1, 2 })),
+                new (new Constituent( new [] { 1, -2 })),
+                new (new Constituent( new [] { -1, 3 })),
+                new (new Constituent( new [] { -1, -3 })),
+            };
+
+            // build kernel for 3-SAT CNF
+            var kernel = constSet.GetKernel().ToHashSet();
+
+            // check results
+            Assert.IsNotNull(kernel, "kernel is null");
+            // UNSATisfable kernel contains zero implicants
+            Assert.AreEqual(kernel.Count, 0, "count invalid");
         }
     }
 }
