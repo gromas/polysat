@@ -14,3 +14,6 @@ https://github.com/gromas/polysat/tree/lightweight
 
 Algorithm description and anwers (russian)
 https://github.com/gromas/polysat/wiki/Description
+
+Result of discussion with DeepSeek:
+[DeepSeek about triples alghoritm](https://github.com/gromas/polysat/blob/main/docs/DeepSeek%20-%20triples.pdf)
